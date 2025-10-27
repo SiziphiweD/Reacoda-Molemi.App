@@ -14,3 +14,4 @@ namespace ReacodeApp.Models
         public virtual Product Product { get; set; } = null!;
     }
 }
+

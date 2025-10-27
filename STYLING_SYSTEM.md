@@ -181,3 +181,4 @@ wwwroot/
 - **Browser Testing**: Test across different browsers and devices
 - **Accessibility Audits**: Regular accessibility checks
 - **Code Reviews**: Maintain code quality and consistency
+
