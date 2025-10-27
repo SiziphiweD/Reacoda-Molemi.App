@@ -1,0 +1,169 @@
+@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Messages";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-comments text-primary me-2"></i>Messages
+                </h2>
+                <a href="@Url.Action("Dashboard", "Buyer")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (Model.Any())
+            {
+                <div class="row">
+                    @foreach (var conversation in Model)
+                    {
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card h-100 shadow-sm conversation-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle me-3">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">@conversation.Farmer.FirstName @conversation.Farmer.LastName</h6>
+                                            <small class="text-muted">@conversation.Farmer.Email</small>
+                                        </div>
+                                        <span class="badge bg-primary">@conversation.OrderCount order@(conversation.OrderCount > 1 ? "s" : "")</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Recent Order:</h6>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">#@conversation.LastOrder.OrderNumber</span>
+                                            <span class="text-success fw-bold">R @conversation.LastOrder.TotalAmount.ToString("F2")</span>
+                                        </div>
+                                        <small class="text-muted">@conversation.LastOrder.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6 class="text-muted mb-2">Order Items:</h6>
+                                        <div class="order-items">
+                                            @foreach (var item in conversation.LastOrder.OrderItems.Take(2))
+                                            {
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="small">@item.Product.Name</span>
+                                                    <span class="small text-muted">@item.Quantity kg</span>
+                                                </div>
+                                            }
+                                            @if (conversation.LastOrder.OrderItems.Count > 2)
+                                            {
+                                                <small class="text-muted">+@(conversation.LastOrder.OrderItems.Count - 2) more items</small>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("Chat", "Buyer", new { farmerId = conversation.Farmer.Id })" class="btn btn-primary btn-sm flex-grow-1">
+                                            <i class="fas fa-comment me-1"></i>Start Chat
+                                        </a>
+                                        <a href="@Url.Action("OrderTracking", "Buyer", new { id = conversation.LastOrder.Id })" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-truck"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>Last order: @conversation.LastOrder.CreatedAt.ToString("MMM dd")
+                                        </small>
+                                        <span class="badge @(conversation.LastOrder.Status == ReacodeApp.Models.OrderStatus.Delivered ? "bg-success" : 
+                                                           conversation.LastOrder.Status == ReacodeApp.Models.OrderStatus.Shipped ? "bg-primary" : 
+                                                           conversation.LastOrder.Status == ReacodeApp.Models.OrderStatus.Accepted ? "bg-info" : "bg-warning")">
+                                            @conversation.LastOrder.Status.ToString()
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-comments text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Messages Yet</h4>
+                    <p class="text-muted mb-4">Start shopping to connect with farmers and send messages about your orders!</p>
+                    <a href="@Url.Action("Shop", "Buyer")" class="btn btn-success btn-lg">
+                        <i class="fas fa-shopping-cart me-2"></i>Start Shopping
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .conversation-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        border-radius: 12px;
+    }
+
+    .conversation-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1FAA59, #28a745);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .order-items {
+        max-height: 100px;
+        overflow-y: auto;
+    }
+
+    .card-footer {
+        border-top: 1px solid #e9ecef;
+        border-radius: 0 0 12px 12px !important;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.5em 0.75em;
+    }
+</style>
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>

@@ -1,0 +1,329 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title fade-in">Contact Us</h1>
+                <p class="hero-subtitle fade-in">Get in touch with the Reacoda Molemi team. We're here to help farmers, buyers, and agricultural communities across South Africa.</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <i class="fas fa-envelope" style="font-size: 8rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Form -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="fw-bold mb-0">
+                            <i class="fas fa-paper-plane me-2"></i>Send us a Message
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="contactForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select class="form-select" id="subject" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="farmer">Farmer Support</option>
+                                    <option value="buyer">Buyer Support</option>
+                                    <option value="technical">Technical Support</option>
+                                    <option value="partnership">Partnership</option>
+                                    <option value="media">Media Inquiry</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" rows="5" placeholder="Tell us how we can help you..." required></textarea>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-map-marker-alt me-2"></i>Office Address
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>Reacoda Molemi Headquarters</strong><br>
+                            123 Agriculture Street<br>
+                            Sandton, Johannesburg<br>
+                            Gauteng, 2196<br>
+                            South Africa
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-phone me-2"></i>Contact Details
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Phone:</strong><br>
+                            <a href="tel:+27111234567" class="text-success">+27 11 123 4567</a>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Email:</strong><br>
+                            <a href="mailto:info@reacoda.com" class="text-success">info@reacoda.com</a>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Support:</strong><br>
+                            <a href="mailto:support@reacoda.com" class="text-success">support@reacoda.com</a>
+                        </div>
+                        <div>
+                            <strong>Business Hours:</strong><br>
+                            Monday - Friday: 8:00 AM - 6:00 PM<br>
+                            Saturday: 9:00 AM - 2:00 PM<br>
+                            Sunday: Closed
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-share-alt me-2"></i>Follow Us
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-3">
+                            <a href="#" class="text-success">
+                                <i class="fab fa-facebook-f" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="#" class="text-success">
+                                <i class="fab fa-twitter" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="#" class="text-success">
+                                <i class="fab fa-instagram" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="#" class="text-success">
+                                <i class="fab fa-linkedin-in" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="#" class="text-success">
+                                <i class="fab fa-youtube" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="fw-bold text-center mb-5">Frequently Asked Questions</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How do I register as a farmer on Reacoda Molemi?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Simply click "Sign Up" and select "I want to sell products as a farmer". You'll need to provide basic information about your farm and undergo a verification process to ensure quality standards.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What are the fees for using the platform?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Reacoda Molemi charges a small commission on successful sales to cover platform maintenance and support. There are no upfront fees for farmers or buyers to join the platform.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                How does delivery work?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Delivery is handled by our network of trusted logistics partners. Farmers can also arrange their own delivery. Delivery fees vary by location and are clearly displayed during checkout.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                What if I'm not satisfied with my order?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We offer a satisfaction guarantee. If you're not happy with your order, contact our support team within 24 hours of delivery, and we'll work to resolve the issue.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                Is my personal information secure?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, we take data security seriously. All personal information is encrypted and stored securely. We comply with South African data protection regulations and never share your information with third parties without consent.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Support Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="fw-bold text-center mb-5">Need More Help?</h2>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="fas fa-book text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold">Help Center</h5>
+                        <p class="text-muted">Browse our comprehensive help articles and guides.</p>
+                        <a href="#" class="btn btn-outline-success">Visit Help Center</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="fas fa-comments text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold">Live Chat</h5>
+                        <p class="text-muted">Chat with our support team in real-time.</p>
+                        <a href="#" class="btn btn-outline-success">Start Chat</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center h-100">
+                    <div class="card-body p-4">
+                        <i class="fas fa-video text-success mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold">Video Tutorials</h5>
+                        <p class="text-muted">Watch step-by-step video guides.</p>
+                        <a href="#" class="btn btn-outline-success">Watch Videos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Show success message (in a real app, this would send to server)
+            showAlert('Thank you for your message! We\'ll get back to you within 24 hours.', 'success');
+            
+            // Reset form
+            this.reset();
+        });
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+}
+

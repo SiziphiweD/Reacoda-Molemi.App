@@ -1,0 +1,353 @@
+@model ReacodeApp.Models.Order
+@{
+    ViewData["Title"] = "Order Tracking";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-truck me-2"></i>Order Tracking
+                        </h4>
+                        <span class="badge bg-light text-dark fs-6">Order #@Model.OrderNumber</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Order Status Progress -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="mb-3">Order Status</h5>
+                            <div class="progress-container">
+                                <div class="progress-steps">
+                                    <div class="step @(Model.Status >= ReacodeApp.Models.OrderStatus.Pending ? "completed" : "")">
+                                        <div class="step-circle">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="step-label">Order Placed</div>
+                                        <div class="step-date">@Model.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                    <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Accepted ? "completed" : "")"></div>
+                                    
+                                    <div class="step @(Model.Status >= ReacodeApp.Models.OrderStatus.Accepted ? "completed" : "")">
+                                        <div class="step-circle">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="step-label">Order Accepted</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Accepted ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                    </div>
+                                    <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? "completed" : "")"></div>
+                                    
+                                    <div class="step @(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? "completed" : "")">
+                                        <div class="step-circle">
+                                            <i class="fas fa-shipping-fast"></i>
+                                        </div>
+                                        <div class="step-label">Shipped</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                    </div>
+                                    <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? "completed" : "")"></div>
+                                    
+                                    <div class="step @(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? "completed" : "")">
+                                        <div class="step-circle">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                        <div class="step-label">Delivered</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Status Alert -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            @{
+                                var statusClass = Model.Status switch
+                                {
+                                    ReacodeApp.Models.OrderStatus.Pending => "alert-warning",
+                                    ReacodeApp.Models.OrderStatus.Accepted => "alert-info",
+                                    ReacodeApp.Models.OrderStatus.Shipped => "alert-primary",
+                                    ReacodeApp.Models.OrderStatus.Delivered => "alert-success",
+                                    ReacodeApp.Models.OrderStatus.Rejected => "alert-danger",
+                                    ReacodeApp.Models.OrderStatus.Cancelled => "alert-secondary",
+                                    _ => "alert-light"
+                                };
+                                var statusIcon = Model.Status switch
+                                {
+                                    ReacodeApp.Models.OrderStatus.Pending => "fas fa-clock",
+                                    ReacodeApp.Models.OrderStatus.Accepted => "fas fa-check-circle",
+                                    ReacodeApp.Models.OrderStatus.Shipped => "fas fa-shipping-fast",
+                                    ReacodeApp.Models.OrderStatus.Delivered => "fas fa-home",
+                                    ReacodeApp.Models.OrderStatus.Rejected => "fas fa-times-circle",
+                                    ReacodeApp.Models.OrderStatus.Cancelled => "fas fa-ban",
+                                    _ => "fas fa-info-circle"
+                                };
+                            }
+                            <div class="alert @statusClass alert-dismissible fade show" role="alert">
+                                <i class="@statusIcon me-2"></i>
+                                <strong>Current Status:</strong> @Model.Status.ToString()
+                                @if (Model.Status == ReacodeApp.Models.OrderStatus.Shipped)
+                                {
+                                    <br><small>Your order is on its way! Expected delivery: 2-3 business days</small>
+                                }
+                                else if (Model.Status == ReacodeApp.Models.OrderStatus.Delivered)
+                                {
+                                    <br><small>Order delivered successfully! Thank you for your purchase.</small>
+                                }
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-list me-2"></i>Order Items
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Quantity</th>
+                                                    <th>Unit Price</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.OrderItems)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                                                                {
+                                                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="me-3" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div class="me-3 bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 8px;">
+                                                                        <i class="fas fa-image text-muted"></i>
+                                                                    </div>
+                                                                }
+                                                                <div>
+                                                                    <h6 class="mb-0">@item.Product.Name</h6>
+                                                                    <small class="text-muted">@item.Product.Category?.Name</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>@item.Quantity kg</td>
+                                                        <td>R @item.UnitPrice.ToString("F2")</td>
+                                                        <td>R @item.TotalPrice.ToString("F2")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Order Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Order Number:</strong><br>
+                                        <span class="text-muted">@Model.OrderNumber</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Order Date:</strong><br>
+                                        <span class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Farmer:</strong><br>
+                                        <span class="text-muted">@Model.Farmer.FirstName @Model.Farmer.LastName</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Payment Method:</strong><br>
+                                        <span class="text-muted">@Model.PaymentMethod.ToString()</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Total Amount:</strong>
+                                        <strong class="text-success">R @Model.TotalAmount.ToString("F2")</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-map-marker-alt me-2"></i>Delivery Address
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <address class="mb-0">
+                                        @Model.DeliveryAddress<br>
+                                        @Model.DeliveryCity<br>
+                                        @Model.DeliveryProvince @Model.DeliveryPostalCode
+                                        @if (!string.IsNullOrEmpty(Model.DeliveryNotes))
+                                        {
+                                            <br><br><strong>Notes:</strong><br>
+                                            <em>@Model.DeliveryNotes</em>
+                                        }
+                                    </address>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-headset me-2"></i>Need Help?
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2">Having issues with your order?</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="@Url.Action("Messages", "Buyer")" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-comments me-1"></i>Contact Farmer
+                                        </a>
+                                        <a href="@Url.Action("Contact", "Home")" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-phone me-1"></i>Customer Support
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Action("OrdersHistory", "Buyer")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Orders
+                                </a>
+                                @if (Model.Status == ReacodeApp.Models.OrderStatus.Delivered)
+                                {
+                                    <a href="@Url.Action("Reviews", "Buyer", new { productId = Model.OrderItems.First().ProductId })" class="btn btn-success">
+                                        <i class="fas fa-star me-1"></i>Leave Review
+                                    </a>
+                                }
+                                <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+                                    <i class="fas fa-print me-1"></i>Print Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress-container {
+        padding: 20px 0;
+    }
+
+    .progress-steps {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        flex: 1;
+        position: relative;
+    }
+
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .step.completed .step-circle {
+        background-color: #1FAA59;
+        color: white;
+    }
+
+    .step-label {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .step-date {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .step-line {
+        height: 2px;
+        background-color: #e9ecef;
+        flex: 1;
+        margin: 0 10px;
+        margin-top: -25px;
+        transition: all 0.3s ease;
+    }
+
+    .step-line.completed {
+        background-color: #1FAA59;
+    }
+
+    @@media (max-width: 768px) {
+        .progress-steps {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .step-line {
+            display: none;
+        }
+        
+        .step {
+            flex-direction: row;
+            text-align: left;
+        }
+        
+        .step-circle {
+            margin-right: 15px;
+            margin-bottom: 0;
+        }
+    }
+</style>
+
+<script>
+    // Auto-refresh every 30 seconds for shipped orders
+    @if (Model.Status == ReacodeApp.Models.OrderStatus.Shipped)
+    {
+        <text>
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+        </text>
+    }
+</script>

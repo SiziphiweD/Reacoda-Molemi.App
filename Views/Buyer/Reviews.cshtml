@@ -1,0 +1,312 @@
+@model List<ReacodeApp.Models.ProductReview>
+@{
+    ViewData["Title"] = "Reviews & Ratings";
+    var product = ViewBag.Product as ReacodeApp.Models.Product;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-star text-warning me-2"></i>Reviews & Ratings
+                </h2>
+                <a href="@Url.Action("Dashboard", "Buyer")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+
+            @if (product != null)
+            {
+                <div class="alert alert-info">
+                    <h5 class="mb-2">
+                        <i class="fas fa-info-circle me-2"></i>Review for: @product.Name
+                    </h5>
+                    <p class="mb-0">Farmer: @product.Farmer.FirstName @product.Farmer.LastName</p>
+                </div>
+            }
+
+            @if (Model.Any())
+            {
+                <div class="row">
+                    @foreach (var review in Model)
+                    {
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">@review.Product.Name</h6>
+                                            <small class="text-muted">by @review.Product.Farmer.FirstName @review.Product.Farmer.LastName</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="rating-stars mb-1">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="fas fa-star @(i <= review.Rating ? "text-warning" : "text-muted")"></i>
+                                                }
+                                            </div>
+                                            <small class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(review.Comment))
+                                    {
+                                        <p class="mb-3">@review.Comment</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="mb-3 text-muted fst-italic">No comment provided</p>
+                                    }
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <a href="@Url.Action("ProductDetails", "Buyer", new { id = review.Product.Id })" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Product
+                                            </a>
+                                            <button class="btn btn-outline-warning btn-sm" onclick="editReview(@review.Id, @review.Rating, '@review.Comment')">
+                                                <i class="fas fa-edit me-1"></i>Edit
+                                            </button>
+                                        </div>
+                                        @if (review.UpdatedAt.HasValue && review.UpdatedAt != review.CreatedAt)
+                                        {
+                                            <small class="text-muted">Updated: @review.UpdatedAt.Value.ToString("MMM dd, yyyy")</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-star text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Reviews Yet</h4>
+                    <p class="text-muted mb-4">Start shopping and leave reviews for products you've purchased!</p>
+                    <a href="@Url.Action("Shop", "Buyer")" class="btn btn-success btn-lg">
+                        <i class="fas fa-shopping-cart me-2"></i>Start Shopping
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-star text-warning me-2"></i>@(product != null ? "Review Product" : "Edit Review")
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm">
+                    <input type="hidden" id="reviewId" name="reviewId" />
+                    <input type="hidden" id="productId" name="productId" value="@(product?.Id)" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating-input">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star rating-star" data-rating="@i"></i>
+                            }
+                        </div>
+                        <input type="hidden" id="rating" name="rating" required />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment (Optional)</label>
+                        <textarea id="comment" name="comment" class="form-control" rows="4" placeholder="Share your experience with this product..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReview()">
+                    <i class="fas fa-paper-plane me-1"></i>Submit Review
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-stars {
+        font-size: 1rem;
+    }
+
+    .rating-input {
+        font-size: 2rem;
+        cursor: pointer;
+    }
+
+    .rating-star {
+        color: #e9ecef;
+        transition: color 0.2s ease;
+        margin-right: 5px;
+    }
+
+    .rating-star:hover,
+    .rating-star.active {
+        color: #ffc107;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e9ecef;
+        border-radius: 0 0 12px 12px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-control:focus {
+        border-color: #1FAA59;
+        box-shadow: 0 0 0 0.2rem rgba(31, 170, 89, 0.25);
+    }
+</style>
+
+<script>
+    let currentRating = 0;
+
+    // Rating star functionality
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            setRating(rating);
+        });
+
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.dataset.rating);
+            highlightStars(rating);
+        });
+    });
+
+    document.querySelector('.rating-input').addEventListener('mouseleave', function() {
+        highlightStars(currentRating);
+    });
+
+    function setRating(rating) {
+        currentRating = rating;
+        document.getElementById('rating').value = rating;
+        highlightStars(rating);
+    }
+
+    function highlightStars(rating) {
+        document.querySelectorAll('.rating-star').forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    function editReview(reviewId, rating, comment) {
+        document.getElementById('reviewId').value = reviewId;
+        setRating(rating);
+        document.getElementById('comment').value = comment;
+        
+        const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+        modal.show();
+    }
+
+    function submitReview() {
+        const reviewId = document.getElementById('reviewId').value;
+        const productId = document.getElementById('productId').value;
+        const rating = document.getElementById('rating').value;
+        const comment = document.getElementById('comment').value;
+
+        if (!rating) {
+            alert('Please select a rating');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('rating', rating);
+        formData.append('comment', comment);
+        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+        fetch('@Url.Action("SubmitReview", "Buyer")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showToast(data.message || 'Failed to submit review', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred', 'error');
+        });
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // Show modal for new review if product is specified
+    @if (product != null)
+    {
+        <text>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            modal.show();
+        });
+        </text>
+    }
+</script>

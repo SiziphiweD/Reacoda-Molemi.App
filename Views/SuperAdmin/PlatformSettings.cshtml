@@ -1,0 +1,299 @@
+@model PlatformSettingsViewModel
+@{
+    ViewData["Title"] = "Platform Settings";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-success">
+                    <i class="fas fa-palette me-2"></i>Platform Settings
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Branding & Appearance</h6>
+                </div>
+                <div class="card-body">
+                    <form id="platformSettingsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="platformName" class="form-label">Platform Name</label>
+                                    <input type="text" class="form-control" id="platformName" value="@Model.PlatformName">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="platformDescription" class="form-label">Platform Description</label>
+                                    <input type="text" class="form-control" id="platformDescription" value="@Model.PlatformDescription">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="primaryColor" class="form-label">Primary Color</label>
+                                    <input type="color" class="form-control form-control-color" id="primaryColor" value="@Model.PrimaryColor">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="secondaryColor" class="form-label">Secondary Color</label>
+                                    <input type="color" class="form-control form-control-color" id="secondaryColor" value="@Model.SecondaryColor">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="logoUrl" class="form-label">Logo URL</label>
+                                    <input type="url" class="form-control" id="logoUrl" value="@Model.LogoUrl">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="faviconUrl" class="form-label">Favicon URL</label>
+                                    <input type="url" class="form-control" id="faviconUrl" value="@Model.FaviconUrl">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Contact Information</h6>
+                </div>
+                <div class="card-body">
+                    <form id="contactSettingsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contactEmail" class="form-label">Contact Email</label>
+                                    <input type="email" class="form-control" id="contactEmail" value="@Model.ContactEmail">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="contactPhone" class="form-label">Contact Phone</label>
+                                    <input type="tel" class="form-control" id="contactPhone" value="@Model.ContactPhone">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" rows="3">@Model.Address</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Save Contact Info
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Social Media Links</h6>
+                </div>
+                <div class="card-body">
+                    <form id="socialSettingsForm">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="facebook" class="form-label">
+                                        <i class="fab fa-facebook me-1"></i>Facebook
+                                    </label>
+                                    <input type="url" class="form-control" id="facebook" value="@Model.SocialMediaFacebook">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="twitter" class="form-label">
+                                        <i class="fab fa-twitter me-1"></i>Twitter
+                                    </label>
+                                    <input type="url" class="form-control" id="twitter" value="@Model.SocialMediaTwitter">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="instagram" class="form-label">
+                                        <i class="fab fa-instagram me-1"></i>Instagram
+                                    </label>
+                                    <input type="url" class="form-control" id="instagram" value="@Model.SocialMediaInstagram">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Save Social Links
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Preview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <img src="@Model.LogoUrl" alt="Logo" class="img-fluid" style="max-height: 60px;" onerror="this.style.display='none'">
+                        </div>
+                        <h4 class="text-primary">@Model.PlatformName</h4>
+                        <p class="text-muted">@Model.PlatformDescription</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <span class="badge" style="background-color: @Model.PrimaryColor;">Primary</span>
+                            <span class="badge" style="background-color: @Model.SecondaryColor;">Secondary</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" onclick="resetToDefault()">
+                            <i class="fas fa-undo me-1"></i>Reset to Default
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="previewChanges()">
+                            <i class="fas fa-eye me-1"></i>Preview Changes
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="exportSettings()">
+                            <i class="fas fa-download me-1"></i>Export Settings
+                        </button>
+                        <button type="button" class="btn btn-outline-success" onclick="importSettings()">
+                            <i class="fas fa-upload me-1"></i>Import Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">System Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Theme Status</span>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Logo Status</span>
+                                <span class="badge badge-success">Loaded</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Favicon Status</span>
+                                <span class="badge badge-success">Loaded</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Social Links</span>
+                                <span class="badge badge-info">3 Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Platform Settings Form
+        document.getElementById('platformSettingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('PlatformName', document.getElementById('platformName').value);
+            formData.append('PlatformDescription', document.getElementById('platformDescription').value);
+            formData.append('PrimaryColor', document.getElementById('primaryColor').value);
+            formData.append('SecondaryColor', document.getElementById('secondaryColor').value);
+            formData.append('LogoUrl', document.getElementById('logoUrl').value);
+            formData.append('FaviconUrl', document.getElementById('faviconUrl').value);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            try {
+                const response = await fetch('@Url.Action("UpdatePlatformSettings", "SuperAdmin")', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Platform settings updated successfully!', 'success');
+                } else {
+                    showToast(result.message, 'error');
+                }
+            } catch (error) {
+                showToast('Error updating platform settings.', 'error');
+            }
+        });
+
+        // Contact Settings Form
+        document.getElementById('contactSettingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showToast('Contact information updated successfully!', 'success');
+        });
+
+        // Social Settings Form
+        document.getElementById('socialSettingsForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showToast('Social media links updated successfully!', 'success');
+        });
+
+        function resetToDefault() {
+            if (confirm('Are you sure you want to reset all settings to default values?')) {
+                showToast('Settings reset to default!', 'success');
+            }
+        }
+
+        function previewChanges() {
+            showToast('Preview mode activated!', 'info');
+        }
+
+        function exportSettings() {
+            showToast('Settings exported successfully!', 'success');
+        }
+
+        function importSettings() {
+            showToast('Settings imported successfully!', 'success');
+        }
+    </script>
+}

@@ -1,0 +1,395 @@
+@model ShopIndexViewModel
+@{
+    ViewData["Title"] = "Shop - Browse Products";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-primary-green">
+                    <i class="fas fa-store me-2"></i>Shop Fresh Produce
+                </h2>
+                <div class="text-muted">
+                    @Model.Products.Count products available
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-custom">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-filter me-2"></i>Filters
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" id="filterForm">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label">Search Products</label>
+                            <input type="text" name="searchTerm" class="form-control" value="@Model.SearchTerm" placeholder="Search products...">
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select name="categoryId" class="form-select">
+                                <option value="">All Categories</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category.Id" selected="@(category.Id == Model.SelectedCategoryId)">@category.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="mb-3">
+                            <label class="form-label">Price Range (R/kg)</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" name="minPrice" class="form-control" value="@Model.MinPrice" placeholder="Min" step="0.01">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="maxPrice" class="form-control" value="@Model.MaxPrice" placeholder="Max" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div class="mb-3">
+                            <label class="form-label">Sort By</label>
+                            <select name="sortBy" class="form-select">
+                                <option value="">Newest First</option>
+                                <option value="price_low">Price: Low to High</option>
+                                <option value="price_high">Price: High to Low</option>
+                                <option value="name">Name: A to Z</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Apply Filters
+                            </button>
+                            <a href="@Url.Action("Shop")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Categories Quick Links -->
+            <div class="card shadow mt-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-tags me-2"></i>Categories
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var category in Model.Categories)
+                        {
+                            <a href="@Url.Action("Shop", new { categoryId = category.Id })" 
+                               class="list-group-item list-group-item-action @(category.Id == Model.SelectedCategoryId ? "active" : "")">
+                                <i class="fas fa-leaf me-2"></i>@category.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            @if (Model.Products.Any())
+            {
+                <div class="row">
+                    @foreach (var product in Model.Products)
+                    {
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow-custom h-100 product-card">
+                                <div class="position-relative">
+                                    <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" style="height: 150px; object-fit: cover;">
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        @if (product.IsAvailable)
+                                        {
+                                            <span class="badge badge-success">Available</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">Out of Stock</span>
+                                        }
+                                    </div>
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <button class="btn btn-sm btn-outline-danger favorite-btn" data-product-id="@product.Id">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column p-2">
+                                    <h6 class="card-title text-success mb-1" style="font-size: 0.9rem;">@product.Name</h6>
+                                    <p class="card-text text-muted mb-2" style="font-size: 0.75rem; line-height: 1.2;">@(product.Description.Length > 60 ? product.Description.Substring(0, 60) + "..." : product.Description)</p>
+                                    <div class="mt-auto">
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Price:</small>
+                                            <div class="fw-bold text-success" style="font-size: 0.9rem;">R @product.PricePerKg.ToString("N2")/kg</div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Available:</small>
+                                            <div class="fw-bold" style="font-size: 0.8rem;">@product.AvailableQuantity kg</div>
+                                        </div>
+                                        <div class="d-grid gap-1">
+                                            <a asp-action="ProductDetails" asp-route-id="@product.Id" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                        @if (product.IsAvailable)
+                        {
+                            <button class="btn btn-success btn-sm add-to-cart" data-product-id="@product.Id">
+                                <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                            </button>
+                            <button class="btn btn-primary btn-sm buy-now" data-product-id="@product.Id">
+                                <i class="fas fa-bolt me-1"></i>Buy Now
+                            </button>
+                        }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted p-2">
+                                    <small style="font-size: 0.7rem;">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        @product.Location
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination would go here -->
+                <div class="row mt-4">
+                    <div class="col-12 text-center">
+                        <p class="text-muted">Showing @Model.Products.Count products</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                                <h4 class="text-muted mb-3">No Products Found</h4>
+                                <p class="text-muted mb-4">Try adjusting your search criteria or browse all categories.</p>
+                                <a href="@Url.Action("Shop")" class="btn btn-success">
+                                    <i class="fas fa-store me-2"></i>Browse All Products
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .favorite-btn {
+        opacity: 0.7;
+        transition: opacity 0.2s ease-in-out;
+    }
+    
+    .favorite-btn:hover {
+        opacity: 1;
+    }
+    
+    .favorite-btn.favorited {
+        color: #dc3545 !important;
+        opacity: 1;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add to cart functionality
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                addToCart(productId, 1);
+            });
+        });
+
+        // Buy now functionality
+        const buyNowButtons = document.querySelectorAll('.buy-now');
+        
+        buyNowButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                buyNow(productId, 1);
+            });
+        });
+
+        // Favorite functionality
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+        
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                toggleFavorite(productId, this);
+            });
+        });
+
+        // Load favorite states
+        loadFavoriteStates();
+        
+        // Load cart count
+        loadCartCount();
+    });
+
+    function loadCartCount() {
+        fetch('@Url.Action("GetCartCount", "Buyer")')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCartCount(data.count);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cart count:', error);
+        });
+    }
+
+    function updateCartCount(count) {
+        const cartBadge = document.querySelector('.cart-badge');
+        if (cartBadge) {
+            cartBadge.textContent = count;
+            cartBadge.style.display = count > 0 ? 'inline' : 'none';
+        }
+    }
+
+    function buyNow(productId, quantity) {
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('quantity', quantity);
+        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+        
+        fetch('@Url.Action("AddToCart", "Buyer")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to checkout page
+                window.location.href = '@Url.Action("Checkout", "Buyer")';
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error processing buy now', 'error');
+        });
+    }
+
+    function addToCart(productId, quantity) {
+        console.log('Adding to cart:', productId, quantity);
+        
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('quantity', quantity);
+        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+        
+        console.log('FormData created, sending request...');
+        
+        fetch('@Url.Action("AddToCart", "Buyer")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response received:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                showToast('Added to cart!', 'success');
+                updateCartCount(data.cartCount || 0);
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error adding to cart', 'error');
+        });
+    }
+
+    function toggleFavorite(productId, button) {
+        const isFavorited = button.classList.contains('favorited');
+        
+        const action = isFavorited ? "RemoveFromFavorites" : "AddToFavorites";
+        fetch(`@Url.Action("AddToFavorites", "Buyer").Replace("AddToFavorites", "${action}")`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({
+                productId: parseInt(productId)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (isFavorited) {
+                    button.classList.remove('favorited');
+                    showToast('Removed from favorites', 'info');
+                } else {
+                    button.classList.add('favorited');
+                    showToast('Added to favorites', 'success');
+                }
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error updating favorites', 'error');
+        });
+    }
+
+    function loadFavoriteStates() {
+        // This would load favorite states from session/localStorage
+        // For now, we'll just show the buttons as unfavorited
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>

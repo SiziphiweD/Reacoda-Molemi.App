@@ -1,0 +1,149 @@
+@{
+    ViewData["Title"] = "Page Not Found";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <!-- 404 Illustration -->
+            <div class="mb-5">
+                <i class="fas fa-seedling text-success" style="font-size: 8rem; opacity: 0.3;"></i>
+            </div>
+            
+            <!-- Error Message -->
+            <h1 class="display-1 fw-bold text-success mb-3">404</h1>
+            <h2 class="fw-bold mb-3">Oops! Page Not Found</h2>
+            <p class="text-muted mb-4 fs-5">
+                The page you're looking for seems to have wandered off like a lost sheep in the fields. 
+                Don't worry, we'll help you find your way back to greener pastures!
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-center gap-3 mb-5">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-success btn-lg">
+                    <i class="fas fa-home me-2"></i>Go Home
+                </a>
+                <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-store me-2"></i>Browse Products
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+            
+            <!-- Helpful Links -->
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-search text-success mb-3" style="font-size: 2.5rem;"></i>
+                            <h5 class="fw-bold">Search Products</h5>
+                            <p class="text-muted small">Find fresh produce from local farmers</p>
+                            <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-success btn-sm">Search Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-user-plus text-success mb-3" style="font-size: 2.5rem;"></i>
+                            <h5 class="fw-bold">Join as Farmer</h5>
+                            <p class="text-muted small">Start selling your produce online</p>
+                            <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-success btn-sm">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-envelope text-success mb-3" style="font-size: 2.5rem;"></i>
+                            <h5 class="fw-bold">Contact Support</h5>
+                            <p class="text-muted small">Get help from our support team</p>
+                            <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-success btn-sm">Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Help -->
+            <div class="mt-5">
+                <h5 class="fw-bold mb-3">Still can't find what you're looking for?</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <i class="fas fa-phone text-success me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Call Us</strong><br>
+                                <a href="tel:+27111234567" class="text-success">+27 11 123 4567</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <i class="fas fa-envelope text-success me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Email Us</strong><br>
+                                <a href="mailto:support@reacoda.com" class="text-success">support@reacoda.com</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fun Facts Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold mb-4">Did You Know?</h3>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body p-4">
+                                <i class="fas fa-leaf text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="fw-bold">Fresh Produce</h5>
+                                <p class="text-muted">We connect you with over 500 local farmers across South Africa</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body p-4">
+                                <i class="fas fa-truck text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="fw-bold">Fast Delivery</h5>
+                                <p class="text-muted">Get your orders delivered within 24-48 hours</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body p-4">
+                                <i class="fas fa-heart text-success mb-3" style="font-size: 2.5rem;"></i>
+                                <h5 class="fw-bold">Support Local</h5>
+                                <p class="text-muted">Every purchase supports local farmers and communities</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.display-1 {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--primary-green);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+@@media (max-width: 768px) {
+    .display-1 {
+        font-size: 5rem;
+    }
+}
+</style>

@@ -1,0 +1,294 @@
+@model List<User>
+@{
+    ViewData["Title"] = "Messages";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-success">
+                    <i class="fas fa-comments me-2"></i>Messages
+                </h2>
+                <div class="text-muted">
+                    Communicate with your buyers
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            <!-- Buyer List -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-users me-2"></i>Your Buyers
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var buyer in Model)
+                            {
+                                <div class="list-group-item list-group-item-action buyer-item" data-buyer-id="@buyer.Id">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold">@buyer.FirstName @buyer.LastName</div>
+                                            <small class="text-muted">@buyer.Email</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Active</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header d-flex align-items-center">
+                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0" id="selected-buyer-name">Select a buyer to start chatting</h6>
+                            <small class="text-muted" id="selected-buyer-email"></small>
+                        </div>
+                    </div>
+                    <div class="card-body d-flex flex-column" style="height: 500px;">
+                        <!-- Messages Area -->
+                        <div class="flex-grow-1 overflow-auto mb-3" id="messages-container">
+                            <div class="text-center py-5">
+                                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Select a buyer to view messages</p>
+                            </div>
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="border-top pt-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="message-input" placeholder="Type your message..." disabled>
+                                <button class="btn btn-success" type="button" id="send-message" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted mb-3">No Buyers Yet</h4>
+                        <p class="text-muted mb-4">When buyers place orders for your products, you'll be able to communicate with them here.</p>
+                        <a asp-action="MyProducts" class="btn btn-success">
+                            <i class="fas fa-boxes me-2"></i>Manage Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Message Template -->
+<template id="message-template">
+    <div class="message-item mb-3">
+        <div class="d-flex align-items-start">
+            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="fas fa-user text-white"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="message-bubble">
+                    <div class="message-content"></div>
+                    <div class="message-time text-muted small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .buyer-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .buyer-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .buyer-item.active {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+    }
+    
+    .message-bubble {
+        background-color: #f8f9fa;
+        border-radius: 15px;
+        padding: 10px 15px;
+        max-width: 70%;
+    }
+    
+    .message-item.sent .message-bubble {
+        background-color: #007bff;
+        color: white;
+        margin-left: auto;
+    }
+    
+    .message-item.sent {
+        flex-direction: row-reverse;
+    }
+    
+    .message-item.sent .avatar-sm {
+        margin-left: 10px;
+        margin-right: 0;
+    }
+    
+    .message-time {
+        margin-top: 5px;
+    }
+    
+    .message-item.sent .message-time {
+        text-align: right;
+        color: #6c757d !important;
+    }
+</style>
+
+<script>
+    let selectedBuyerId = null;
+    let messages = {};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const buyerItems = document.querySelectorAll('.buyer-item');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-message');
+        const messagesContainer = document.getElementById('messages-container');
+
+        // Handle buyer selection
+        buyerItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                buyerItems.forEach(i => i.classList.remove('active'));
+                
+                // Add active class to selected item
+                this.classList.add('active');
+                
+                // Get buyer info
+                selectedBuyerId = this.dataset.buyerId;
+                const buyerName = this.querySelector('.fw-bold').textContent;
+                const buyerEmail = this.querySelector('.text-muted').textContent;
+                
+                // Update header
+                document.getElementById('selected-buyer-name').textContent = buyerName;
+                document.getElementById('selected-buyer-email').textContent = buyerEmail;
+                
+                // Enable message input
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                
+                // Load messages for this buyer
+                loadMessages(selectedBuyerId);
+            });
+        });
+
+        // Handle send message
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function loadMessages(buyerId) {
+            // Clear messages container
+            messagesContainer.innerHTML = '';
+            
+            // In a real application, you would load messages from the server
+            // For now, we'll show a placeholder
+            if (!messages[buyerId] || messages[buyerId].length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No messages yet</p>
+                        <p class="text-muted small">Start a conversation with this buyer</p>
+                    </div>
+                `;
+            } else {
+                // Display existing messages
+                messages[buyerId].forEach(message => {
+                    addMessageToContainer(message);
+                });
+            }
+        }
+
+        function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (!messageText || !selectedBuyerId) return;
+
+            // Create message object
+            const message = {
+                id: Date.now(),
+                content: messageText,
+                senderId: 'farmer', // In real app, get from session
+                receiverId: selectedBuyerId,
+                timestamp: new Date(),
+                isSent: true
+            };
+
+            // Add to messages array
+            if (!messages[selectedBuyerId]) {
+                messages[selectedBuyerId] = [];
+            }
+            messages[selectedBuyerId].push(message);
+
+            // Add to UI
+            addMessageToContainer(message);
+
+            // Clear input
+            messageInput.value = '';
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // In a real application, send message to server
+            console.log('Sending message:', message);
+        }
+
+        function addMessageToContainer(message) {
+            const template = document.getElementById('message-template');
+            const messageElement = template.content.cloneNode(true);
+            
+            messageElement.querySelector('.message-content').textContent = message.content;
+            messageElement.querySelector('.message-time').textContent = message.timestamp.toLocaleTimeString();
+            
+            const messageItem = messageElement.querySelector('.message-item');
+            if (message.isSent) {
+                messageItem.classList.add('sent');
+            }
+            
+            messagesContainer.appendChild(messageElement);
+        }
+    });
+</script>
+

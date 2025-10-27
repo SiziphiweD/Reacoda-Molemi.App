@@ -1,0 +1,170 @@
+@model List<CartItem>
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">
+                <i class="fas fa-shopping-cart me-2"></i>Shopping Cart
+            </h2>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        @foreach (var item in Model)
+                        {
+                            <div class="row align-items-center py-3 border-bottom">
+                                <div class="col-md-2">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" class="img-fluid rounded" alt="@item.ProductName" style="height: 80px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <h6 class="fw-bold mb-1">@item.ProductName</h6>
+                                    <p class="text-muted mb-0">R@item.Price.ToString("F2") per kg</p>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="input-group" style="max-width: 120px;">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(@item.ProductId, @(item.Quantity - 1))">-</button>
+                                        <input type="number" class="form-control text-center" value="@item.Quantity" min="1" id="qty-@item.ProductId" />
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(@item.ProductId, @(item.Quantity + 1))">+</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <h6 class="fw-bold text-success mb-0">R@item.TotalPrice.ToString("F2")</h6>
+                                </div>
+                                
+                                <div class="col-md-1">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="removeFromCart(@item.ProductId)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="fw-bold mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold">R@Model.Sum(i => i.TotalPrice).ToString("F2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Delivery:</span>
+                            <span class="fw-bold">R50.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fw-bold">Total:</span>
+                            <span class="fw-bold text-success fs-5">R@((Model.Sum(i => i.TotalPrice) + 50).ToString("F2"))</span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a asp-action="Checkout" class="btn btn-success btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                            </a>
+                            <a asp-action="Index" class="btn btn-outline-success">
+                                <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Your cart is empty</h4>
+            <p class="text-muted">Add some fresh produce to get started!</p>
+            <a asp-action="Index" class="btn btn-success btn-lg">
+                <i class="fas fa-store me-2"></i>Start Shopping
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function updateQuantity(productId, newQuantity) {
+            if (newQuantity < 1) return;
+            
+            fetch('@Url.Action("UpdateCart", "Shop")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: `productId=${productId}&quantity=${newQuantity}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                showAlert('Error updating cart', 'danger');
+            });
+        }
+
+        function removeFromCart(productId) {
+            fetch('@Url.Action("RemoveFromCart", "Shop")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: `productId=${productId}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                showAlert('Error removing item from cart', 'danger');
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+}

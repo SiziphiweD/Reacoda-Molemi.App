@@ -1,0 +1,421 @@
+@model List<ReacodeApp.Models.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="fas fa-bell me-2"></i>Notifications
+                </h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double me-1"></i>Mark All Read
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="clearAll()">
+                        <i class="fas fa-trash me-1"></i>Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills" id="notificationTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab">
+                        <i class="fas fa-list me-1"></i>All Notifications
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="unread-tab" data-bs-toggle="pill" data-bs-target="#unread" type="button" role="tab">
+                        <i class="fas fa-envelope me-1"></i>Unread
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="orders-tab" data-bs-toggle="pill" data-bs-target="#orders" type="button" role="tab">
+                        <i class="fas fa-shopping-cart me-1"></i>Orders
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="system-tab" data-bs-toggle="pill" data-bs-target="#system" type="button" role="tab">
+                        <i class="fas fa-cog me-1"></i>System
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Notification Content -->
+    <div class="tab-content" id="notificationTabContent">
+        <!-- All Notifications -->
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var notification in Model)
+                        {
+                            <div class="card mb-3 notification-card @(notification.IsRead ? "" : "unread")" data-notification-id="@notification.Id">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            @switch (notification.Type)
+                                            {
+                                                case ReacodeApp.Models.NotificationType.Order:
+                                                    <i class="fas fa-shopping-cart text-success"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.System:
+                                                    <i class="fas fa-cog text-info"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.Payment:
+                                                    <i class="fas fa-credit-card text-warning"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.Product:
+                                                    <i class="fas fa-box text-primary"></i>
+                                                    break;
+                                                default:
+                                                    <i class="fas fa-bell text-secondary"></i>
+                                                    break;
+                                            }
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="fw-bold mb-1">@notification.Title</h6>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                                    @if (!notification.IsRead)
+                                                    {
+                                                        <span class="badge badge-danger">New</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <p class="text-muted mb-2">@notification.Message</p>
+                                            <div class="d-flex gap-2">
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" onclick="markAsRead(@notification.Id)">
+                                                        <i class="fas fa-check me-1"></i>Mark Read
+                                                    </button>
+                                                }
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(@notification.Id)">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No Notifications</h4>
+                            <p class="text-muted">You're all caught up! No new notifications at the moment.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Unread Notifications -->
+        <div class="tab-pane fade" id="unread" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    @{
+                        var unreadNotifications = Model?.Where(n => !n.IsRead).ToList();
+                    }
+                    @if (unreadNotifications != null && unreadNotifications.Any())
+                    {
+                        @foreach (var notification in unreadNotifications)
+                        {
+                            <div class="card mb-3 notification-card unread" data-notification-id="@notification.Id">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            @switch (notification.Type)
+                                            {
+                                                case ReacodeApp.Models.NotificationType.Order:
+                                                    <i class="fas fa-shopping-cart text-success"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.System:
+                                                    <i class="fas fa-cog text-info"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.Payment:
+                                                    <i class="fas fa-credit-card text-warning"></i>
+                                                    break;
+                                                case ReacodeApp.Models.NotificationType.Product:
+                                                    <i class="fas fa-box text-primary"></i>
+                                                    break;
+                                                default:
+                                                    <i class="fas fa-bell text-secondary"></i>
+                                                    break;
+                                            }
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="fw-bold mb-1">@notification.Title</h6>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                                    <span class="badge badge-danger">New</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-muted mb-2">@notification.Message</p>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-outline-success" onclick="markAsRead(@notification.Id)">
+                                                    <i class="fas fa-check me-1"></i>Mark Read
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(@notification.Id)">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            <h4 class="text-success mt-3">All Caught Up!</h4>
+                            <p class="text-muted">You have no unread notifications.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Notifications -->
+        <div class="tab-pane fade" id="orders" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    @{
+                        var orderNotifications = Model?.Where(n => n.Type == ReacodeApp.Models.NotificationType.Order).ToList();
+                    }
+                    @if (orderNotifications != null && orderNotifications.Any())
+                    {
+                        @foreach (var notification in orderNotifications)
+                        {
+                            <div class="card mb-3 notification-card @(notification.IsRead ? "" : "unread")" data-notification-id="@notification.Id">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <i class="fas fa-shopping-cart text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="fw-bold mb-1">@notification.Title</h6>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                                    @if (!notification.IsRead)
+                                                    {
+                                                        <span class="badge badge-danger">New</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <p class="text-muted mb-2">@notification.Message</p>
+                                            <div class="d-flex gap-2">
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" onclick="markAsRead(@notification.Id)">
+                                                        <i class="fas fa-check me-1"></i>Mark Read
+                                                    </button>
+                                                }
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(@notification.Id)">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No Order Notifications</h4>
+                            <p class="text-muted">You have no order-related notifications.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Notifications -->
+        <div class="tab-pane fade" id="system" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    @{
+                        var systemNotifications = Model?.Where(n => n.Type == ReacodeApp.Models.NotificationType.System).ToList();
+                    }
+                    @if (systemNotifications != null && systemNotifications.Any())
+                    {
+                        @foreach (var notification in systemNotifications)
+                        {
+                            <div class="card mb-3 notification-card @(notification.IsRead ? "" : "unread")" data-notification-id="@notification.Id">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-3">
+                                            <i class="fas fa-cog text-info"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="fw-bold mb-1">@notification.Title</h6>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                                    @if (!notification.IsRead)
+                                                    {
+                                                        <span class="badge badge-danger">New</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <p class="text-muted mb-2">@notification.Message</p>
+                                            <div class="d-flex gap-2">
+                                                @if (!notification.IsRead)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" onclick="markAsRead(@notification.Id)">
+                                                        <i class="fas fa-check me-1"></i>Mark Read
+                                                    </button>
+                                                }
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification(@notification.Id)">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-cog text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No System Notifications</h4>
+                            <p class="text-muted">You have no system notifications.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Mark notification as read
+        function markAsRead(notificationId) {
+            // Simulate API call
+            setTimeout(() => {
+                const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (card) {
+                    card.classList.remove('unread');
+                    const badge = card.querySelector('.badge-danger');
+                    if (badge) {
+                        badge.remove();
+                    }
+                    const markReadBtn = card.querySelector('button[onclick*="markAsRead"]');
+                    if (markReadBtn) {
+                        markReadBtn.remove();
+                    }
+                }
+                showAlert('Notification marked as read', 'success');
+            }, 500);
+        }
+        
+        // Delete notification
+        function deleteNotification(notificationId) {
+            if (confirm('Are you sure you want to delete this notification?')) {
+                // Simulate API call
+                setTimeout(() => {
+                    const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+                    showAlert('Notification deleted', 'success');
+                }, 500);
+            }
+        }
+        
+        // Mark all as read
+        function markAllAsRead() {
+            if (confirm('Mark all notifications as read?')) {
+                // Simulate API call
+                setTimeout(() => {
+                    const unreadCards = document.querySelectorAll('.notification-card.unread');
+                    unreadCards.forEach(card => {
+                        card.classList.remove('unread');
+                        const badge = card.querySelector('.badge-danger');
+                        if (badge) {
+                            badge.remove();
+                        }
+                        const markReadBtn = card.querySelector('button[onclick*="markAsRead"]');
+                        if (markReadBtn) {
+                            markReadBtn.remove();
+                        }
+                    });
+                    showAlert('All notifications marked as read', 'success');
+                }, 500);
+            }
+        }
+        
+        // Clear all notifications
+        function clearAll() {
+            if (confirm('Are you sure you want to delete all notifications? This action cannot be undone.')) {
+                // Simulate API call
+                setTimeout(() => {
+                    const allCards = document.querySelectorAll('.notification-card');
+                    allCards.forEach(card => {
+                        card.remove();
+                    });
+                    showAlert('All notifications cleared', 'success');
+                }, 500);
+            }
+        }
+        
+        // Show alert
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+}
+
+<style>
+.notification-card.unread {
+    border-left: 4px solid var(--primary-green);
+    background-color: rgba(31, 170, 89, 0.05);
+}
+
+.notification-card {
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
+

@@ -1,0 +1,340 @@
+@model BuyerDashboardViewModel
+@{
+    ViewData["Title"] = "Buyer Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-primary-green">
+                    <i class="fas fa-shopping-bag me-2"></i>Buyer Dashboard
+                </h2>
+                <div class="text-muted">
+                    Welcome back, @Model.Buyer.FirstName!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">@Model.TotalOrders</div>
+                <div class="dashboard-label">Total Orders</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card warning">
+                <div class="dashboard-stat warning">@Model.PendingOrders</div>
+                <div class="dashboard-label">Pending Orders</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">@Model.DeliveredOrders</div>
+                <div class="dashboard-label">Delivered Orders</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card info">
+                <div class="dashboard-stat info">R @Model.TotalSpent.ToString("N2")</div>
+                <div class="dashboard-label">Total Spent</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history me-2"></i>Recent Orders
+                    </h6>
+                    <a asp-action="OrdersHistory" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentOrders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Farmer</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.RecentOrders)
+                                    {
+                                        <tr>
+                                            <td>#@order.Id</td>
+                                            <td>@order.Farmer.FirstName @order.Farmer.LastName</td>
+                                            <td>R @order.TotalAmount.ToString("N2")</td>
+                                            <td>
+                                                <span class="badge bg-@(order.Status switch {
+                                                    OrderStatus.Pending => "warning",
+                                                    OrderStatus.Accepted => "info",
+                                                    OrderStatus.Shipped => "primary",
+                                                    OrderStatus.Delivered => "success",
+                                                    OrderStatus.Cancelled => "danger",
+                                                    _ => "secondary"
+                                                })">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                            <td>@order.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No orders yet</p>
+                            <a asp-action="Shop" class="btn btn-success">
+                                <i class="fas fa-store me-2"></i>Start Shopping
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorite Products -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-heart me-2"></i>Favorite Products
+                    </h6>
+                    <a asp-action="Favorites" class="btn btn-success btn-sm">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.FavoriteProducts.Any())
+                    {
+                        @foreach (var product in Model.FavoriteProducts)
+                        {
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="@product.ImageUrl" alt="@product.Name" 
+                                     class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">@product.Name</h6>
+                                    <p class="mb-1 text-muted small">@product.Category.Name</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-success">R @product.PricePerKg.ToString("N2")/kg</span>
+                                        <a asp-action="ProductDetails" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No favorite products yet</p>
+                            <p class="text-muted small">Add products to your favorites while shopping</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suggested Products -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-lightbulb me-2"></i>Suggested for You
+                    </h6>
+                    <a asp-action="Shop" class="btn btn-info btn-sm">
+                        <i class="fas fa-store me-1"></i>Browse All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.SuggestedProducts.Any())
+                    {
+                        <div class="row">
+                            @foreach (var product in Model.SuggestedProducts)
+                            {
+                                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                                    <div class="card h-100">
+                                        <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" style="height: 150px; object-fit: cover;">
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="card-title">@product.Name</h6>
+                                            <p class="card-text text-muted small">@product.Category.Name</p>
+                                            <div class="mt-auto">
+                                                <div class="fw-bold text-success mb-2">R @product.PricePerKg.ToString("N2")/kg</div>
+                                                <div class="d-flex gap-1">
+                                                    <a asp-action="ProductDetails" asp-route-id="@product.Id" class="btn btn-primary btn-sm flex-fill">
+                                                        <i class="fas fa-eye me-1"></i>View
+                                                    </a>
+                                                    <button class="btn btn-outline-success btn-sm add-to-cart" data-product-id="@product.Id">
+                                                        <i class="fas fa-cart-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-lightbulb fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No suggestions yet</p>
+                            <p class="text-muted small">Start shopping to get personalized recommendations</p>
+                            <a asp-action="Shop" class="btn btn-success">
+                                <i class="fas fa-store me-2"></i>Start Shopping
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Shop" class="btn btn-success w-100">
+                                <i class="fas fa-store me-2"></i>Shop Now
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="OrdersHistory" class="btn btn-primary w-100">
+                                <i class="fas fa-history me-2"></i>Order History
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Favorites" class="btn btn-warning w-100">
+                                <i class="fas fa-heart me-2"></i>Favorites
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="ProfileSettings" class="btn btn-info w-100">
+                                <i class="fas fa-user-cog me-2"></i>Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    .text-xs {
+        font-size: 0.7rem;
+    }
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+</style>
+
+<script>
+    // Add to cart functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                addToCart(productId, 1);
+            });
+        });
+    });
+
+    function addToCart(productId, quantity) {
+        fetch('@Url.Action("AddToCart", "Buyer")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({
+                productId: parseInt(productId),
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                showToast('Added to cart!', 'success');
+                
+                // Update cart count if displayed
+                const cartCount = document.querySelector('.cart-count');
+                if (cartCount) {
+                    cartCount.textContent = data.cartCount;
+                }
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error adding to cart', 'error');
+        });
+    }
+
+    function showToast(message, type) {
+        // Simple toast notification
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>

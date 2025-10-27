@@ -1,0 +1,248 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "Orders Management";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 text-success">
+                    <i class="fas fa-shopping-cart me-2"></i>Orders Management
+                </h1>
+                <div class="text-muted">
+                    Total Orders: @Model.Count
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Status</label>
+                            <select name="status" class="form-select">
+                                <option value="all">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Accepted">Accepted</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-1"></i>Filter
+                            </button>
+                            <a asp-action="OrdersManagement" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Orders List</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="ordersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Buyer</th>
+                                        <th>Farmer</th>
+                                        <th>Items</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@order.OrderNumber</div>
+                                                <small class="text-muted">#@order.Id</small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@order.Buyer.FirstName @order.Buyer.LastName</div>
+                                                <small class="text-muted">@order.Buyer.Email</small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@order.Farmer.FirstName @order.Farmer.LastName</div>
+                                                <small class="text-muted">@order.Farmer.Email</small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@order.OrderItems.Count items</div>
+                                                <small class="text-muted">
+                                                    @string.Join(", ", order.OrderItems.Take(2).Select(oi => oi.Product.Name))
+                                                    @if (order.OrderItems.Count > 2)
+                                                    {
+                                                        <span>+@(order.OrderItems.Count - 2) more</span>
+                                                    }
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-success">R @order.TotalAmount.ToString("N2")</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-@(order.Status switch {
+                                                    OrderStatus.Pending => "warning",
+                                                    OrderStatus.Accepted => "info",
+                                                    OrderStatus.Shipped => "primary",
+                                                    OrderStatus.Delivered => "success",
+                                                    OrderStatus.Cancelled => "danger",
+                                                    _ => "secondary"
+                                                })">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@order.PaymentMethod</div>
+                                                @if (!string.IsNullOrEmpty(order.PaymentReference))
+                                                {
+                                                    <small class="text-muted">Ref: @order.PaymentReference</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@order.CreatedAt.ToString("MMM dd")</div>
+                                                <small class="text-muted">@order.CreatedAt.ToString("yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-info" onclick="viewOrderDetails(@order.Id)" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <div class="btn-group" role="group">
+                                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Update Status
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Accepted')">Accept</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Shipped')">Mark as Shipped</a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(@order.Id, 'Delivered')">Mark as Delivered</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item text-danger" href="#" onclick="updateOrderStatus(@order.Id, 'Cancelled')">Cancel</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                            <h5>No orders found</h5>
+                            <p>Try adjusting your filters or check back later.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsModalLabel">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Orders Management</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            <!-- Message will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewOrderDetails(orderId) {
+        fetch(`@Url.Action("OrderDetails", "Admin")/${orderId}`)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('orderDetailsContent').innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+                modal.show();
+            })
+            .catch(error => {
+                showToast('Error loading order details', 'error');
+            });
+    }
+
+    function updateOrderStatus(orderId, status) {
+        if (confirm(`Are you sure you want to update this order status to ${status}?`)) {
+            fetch('@Url.Action("UpdateOrderStatus", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ 
+                    orderId: orderId, 
+                    status: status 
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showToast(data.message, data.success ? 'success' : 'error');
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(error => {
+                showToast('Error updating order status', 'error');
+            });
+        }
+    }
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        toastMessage.textContent = message;
+        toast.className = `toast ${type === 'success' ? 'bg-success' : 'bg-danger'} text-white`;
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+</script>

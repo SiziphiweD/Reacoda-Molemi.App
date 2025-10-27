@@ -1,0 +1,248 @@
+@model FarmerDashboardViewModel
+@{
+    ViewData["Title"] = "Farmer Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-primary-green">
+                    <i class="fas fa-seedling me-2"></i>Farmer Dashboard
+                </h2>
+                <div class="text-muted">
+                    Welcome back, @Model.Farmer.FirstName!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">@Model.TotalProducts</div>
+                <div class="dashboard-label">Total Products</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">@Model.ActiveProducts</div>
+                <div class="dashboard-label">Active Products</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card info">
+                <div class="dashboard-stat info">@Model.TotalOrders</div>
+                <div class="dashboard-label">Total Orders</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card warning">
+                <div class="dashboard-stat warning">@Model.PendingOrders</div>
+                <div class="dashboard-label">Pending Orders</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-dollar-sign me-2"></i>Total Earnings
+                    </h6>
+                    <a asp-action="Earnings" class="btn btn-success btn-sm">
+                        <i class="fas fa-chart-line me-1"></i>View Details
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h2 class="text-success fw-bold">R @Model.TotalEarnings.ToString("N2")</h2>
+                        <p class="text-muted mb-0">Total earnings from delivered orders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-shopping-cart me-2"></i>Recent Orders
+                    </h6>
+                    <a asp-action="OrdersReceived" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentOrders.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Buyer</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.RecentOrders)
+                                    {
+                                        <tr>
+                                            <td>#@order.Id</td>
+                                            <td>@order.Buyer.FirstName @order.Buyer.LastName</td>
+                                            <td>R @order.TotalAmount.ToString("N2")</td>
+                                            <td>
+                                                <span class="badge bg-@(order.Status switch {
+                                                    OrderStatus.Pending => "warning",
+                                                    OrderStatus.Accepted => "info",
+                                                    OrderStatus.Shipped => "primary",
+                                                    OrderStatus.Delivered => "success",
+                                                    OrderStatus.Cancelled => "danger",
+                                                    _ => "secondary"
+                                                })">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                            <td>@order.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No orders yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </h6>
+                    <a asp-controller="Home" asp-action="Notifications" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.Notifications.Any())
+                    {
+                        @foreach (var notification in Model.Notifications)
+                        {
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-@(notification.Type switch {
+                                        NotificationType.Order => "shopping-cart",
+                                        NotificationType.Product => "box",
+                                        NotificationType.System => "cog",
+                                        NotificationType.Payment => "credit-card",
+                                        _ => "info-circle"
+                                    }) text-@(notification.Type switch {
+                                        NotificationType.Order => "primary",
+                                        NotificationType.Product => "success",
+                                        NotificationType.System => "warning",
+                                        NotificationType.Payment => "info",
+                                        _ => "secondary"
+                                    })"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">@notification.Title</h6>
+                                    <p class="mb-1 text-muted small">@notification.Message</p>
+                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, HH:mm")</small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No notifications</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="AddProduct" class="btn btn-success w-100">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="MyProducts" class="btn btn-primary w-100">
+                                <i class="fas fa-boxes me-2"></i>My Products
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="OrdersReceived" class="btn btn-warning w-100">
+                                <i class="fas fa-shopping-cart me-2"></i>Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a asp-action="Earnings" class="btn btn-info w-100">
+                                <i class="fas fa-dollar-sign me-2"></i>Earnings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    .text-xs {
+        font-size: 0.7rem;
+    }
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+</style>

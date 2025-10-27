@@ -1,0 +1,288 @@
+@model SuperAdminDashboardViewModel
+@{
+    ViewData["Title"] = "Super Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-primary-green">
+                    <i class="fas fa-crown me-2"></i>Super Admin Dashboard
+                </h1>
+                <div class="text-muted">
+                    <i class="fas fa-calendar me-1"></i>
+                    @DateTime.Now.ToString("MMMM dd, yyyy")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">@Model.TotalUsers</div>
+                <div class="dashboard-label">Total Users</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-stat">R @Model.TotalRevenue.ToString("N2")</div>
+                <div class="dashboard-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card info">
+                <div class="dashboard-stat info">R @Model.PlatformCommission.ToString("N2")</div>
+                <div class="dashboard-label">Platform Commission</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="dashboard-card warning">
+                <div class="dashboard-stat warning">@Model.TotalOrders</div>
+                <div class="dashboard-label">Total Orders</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Breakdown -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 text-center">
+                            <div class="text-success">
+                                <i class="fas fa-seedling fa-2x mb-2"></i>
+                                <div class="h4">@Model.TotalFarmers</div>
+                                <div class="text-sm">Farmers</div>
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <div class="text-info">
+                                <i class="fas fa-shopping-bag fa-2x mb-2"></i>
+                                <div class="h4">@Model.TotalBuyers</div>
+                                <div class="text-sm">Buyers</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <div class="text-warning">
+                            <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                            <div class="h4">@Model.TotalAdmins</div>
+                            <div class="text-sm">Admins</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">System Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-primary">
+                                <i class="fas fa-box fa-2x mb-2"></i>
+                                <div class="h4">@Model.TotalProducts</div>
+                                <div class="text-sm">Products</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-success">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <div class="h4">@Model.TotalOrders</div>
+                                <div class="text-sm">Orders</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-info">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <div class="h4">R @Model.TotalRevenue.ToString("N0")</div>
+                                <div class="text-sm">Revenue</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-warning">
+                                <i class="fas fa-percentage fa-2x mb-2"></i>
+                                <div class="h4">5%</div>
+                                <div class="text-sm">Commission</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">User Growth</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Revenue Trend</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Buyer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders.Take(5))
+                                {
+                                    <tr>
+                                        <td>@order.OrderNumber</td>
+                                        <td>@order.Buyer.FirstName @order.Buyer.LastName</td>
+                                        <td>R @order.TotalAmount.ToString("N2")</td>
+                                        <td>
+                                            <span class="badge badge-@(order.Status == OrderStatus.Delivered ? "success" : order.Status == OrderStatus.Shipped ? "info" : "warning")">
+                                                @order.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.RecentUsers.Take(5))
+                                {
+                                    <tr>
+                                        <td>@user.FirstName @user.LastName</td>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            <span class="badge badge-@(user.Role == UserRole.Farmer ? "success" : user.Role == UserRole.Buyer ? "info" : "warning")">
+                                                @user.Role
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-@(user.IsActive ? "success" : "danger")">
+                                                @(user.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // User Growth Chart
+        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+        const userGrowthChart = new Chart(userGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.UserGrowthData.Select(x => $"{x.Month}/{x.Year}"))),
+                datasets: [{
+                    label: 'New Users',
+                    data: @Html.Raw(Json.Serialize(Model.UserGrowthData.Select(x => x.Count))),
+                    borderColor: 'rgb(31, 170, 89)',
+                    backgroundColor: 'rgba(31, 170, 89, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Platform Commission', 'Farmer Earnings'],
+                datasets: [{
+                    data: [@Model.PlatformCommission, @(Model.TotalRevenue - Model.PlatformCommission)],
+                    backgroundColor: ['#E74C3C', '#1FAA59']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,146 @@
+@model List<User>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">
+                <i class="fas fa-users me-2"></i>User Management
+            </h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Verified</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            @if (!string.IsNullOrEmpty(user.ProfileImage))
+                                            {
+                                                <img src="@user.ProfileImage" class="rounded-circle" width="40" height="40" alt="Profile" />
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    @user.FirstName.Substring(0, 1)@user.LastName.Substring(0, 1)
+                                                </div>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">@user.FirstName @user.LastName</div>
+                                            @if (!string.IsNullOrEmpty(user.PhoneNumber))
+                                            {
+                                                <small class="text-muted">@user.PhoneNumber</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <span class="badge @(user.Role == UserRole.Farmer ? "badge-success" : 
+                                                      user.Role == UserRole.Buyer ? "badge-primary" : 
+                                                      user.Role == UserRole.Admin ? "badge-warning" : "badge-danger")">
+                                        @user.Role
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(user.IsActive ? "badge-success" : "badge-danger")">
+                                        @(user.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(user.IsVerified ? "badge-success" : "badge-warning")">
+                                        @(user.IsVerified ? "Verified" : "Pending")
+                                    </span>
+                                </td>
+                                <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        @if (user.IsActive)
+                                        {
+                                            <button class="btn btn-outline-danger" onclick="updateUserStatus(@user.Id, false)" title="Suspend User">
+                                                <i class="fas fa-user-slash"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-outline-success" onclick="updateUserStatus(@user.Id, true)" title="Activate User">
+                                                <i class="fas fa-user-check"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateUserStatus(userId, isActive) {
+            const action = isActive ? 'activate' : 'suspend';
+            if (confirm(`Are you sure you want to ${action} this user?`)) {
+                fetch('@Url.Action("UpdateUserStatus", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({ userId: userId, isActive: isActive })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showAlert(data.message || 'Error updating user status', 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error updating user status', 'danger');
+                });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+}
+

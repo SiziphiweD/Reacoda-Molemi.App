@@ -1,0 +1,146 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "Product Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">
+                <i class="fas fa-box me-2"></i>Product Management
+            </h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Farmer</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                            {
+                                                <img src="@product.ImageUrl" class="rounded" width="50" height="50" alt="@product.Name" style="object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">@product.Name</div>
+                                            <small class="text-muted">@product.Description.Substring(0, Math.Min(50, product.Description.Length))...</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-bold">@product.Farmer.FirstName @product.Farmer.LastName</div>
+                                        <small class="text-muted">@product.Farmer.Email</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success">@product.Category.Name</span>
+                                </td>
+                                <td class="text-success fw-bold">R@product.PricePerKg.ToString("F2")/kg</td>
+                                <td>
+                                    <span class="badge @(product.Status == ProductStatus.Approved ? "badge-success" : 
+                                                      product.Status == ProductStatus.Pending ? "badge-warning" : "badge-danger")">
+                                        @product.Status
+                                    </span>
+                                </td>
+                                <td>@product.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        @if (product.Status == ProductStatus.Pending)
+                                        {
+                                            <button class="btn btn-success btn-sm" onclick="updateProductStatus(@product.Id, 'Approved')" title="Approve Product">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="updateProductStatus(@product.Id, 'Rejected')" title="Reject Product">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        }
+                                        else if (product.Status == ProductStatus.Approved)
+                                        {
+                                            <button class="btn btn-warning btn-sm" onclick="updateProductStatus(@product.Id, 'Pending')" title="Mark as Pending">
+                                                <i class="fas fa-clock"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateProductStatus(productId, status) {
+            const action = status === 'Approved' ? 'approve' : 
+                          status === 'Rejected' ? 'reject' : 'mark as pending';
+            
+            if (confirm(`Are you sure you want to ${action} this product?`)) {
+                fetch('@Url.Action("UpdateProductStatus", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({ productId: productId, status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showAlert(data.message || 'Error updating product status', 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error updating product status', 'danger');
+                });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+}
+

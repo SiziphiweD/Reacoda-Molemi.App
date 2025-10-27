@@ -1,0 +1,163 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "Orders Received";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">
+                <i class="fas fa-shopping-bag me-2"></i>Orders Received
+            </h2>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Buyer</th>
+                                <th>Products</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@order.OrderNumber</td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-bold">@order.Buyer.FirstName @order.Buyer.LastName</div>
+                                            <small class="text-muted">@order.Buyer.Email</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @foreach (var item in order.OrderItems.Take(2))
+                                        {
+                                            <div class="small">
+                                                @item.Product.Name (@item.Quantity kg)
+                                            </div>
+                                        }
+                                        @if (order.OrderItems.Count > 2)
+                                        {
+                                            <div class="small text-muted">+@(order.OrderItems.Count - 2) more</div>
+                                        }
+                                    </td>
+                                    <td class="text-success fw-bold">R@order.TotalAmount.ToString("F2")</td>
+                                    <td>
+                                        <span class="badge @(order.Status == OrderStatus.Pending ? "badge-warning" : 
+                                                      order.Status == OrderStatus.Accepted ? "badge-success" : 
+                                                      order.Status == OrderStatus.Shipped ? "badge-success" : 
+                                                      order.Status == OrderStatus.Delivered ? "badge-success" : "badge-danger")">
+                                            @order.Status
+                                        </span>
+                                    </td>
+                                    <td>@order.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                    <td>
+                                        @if (order.Status == OrderStatus.Pending)
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-success btn-sm" onclick="updateOrderStatus(@order.Id, 'Accepted')" title="Accept Order">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="updateOrderStatus(@order.Id, 'Rejected')" title="Reject Order">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (order.Status == OrderStatus.Accepted)
+                                        {
+                                            <button class="btn btn-success btn-sm" onclick="updateOrderStatus(@order.Id, 'Shipped')">
+                                                <i class="fas fa-truck me-1"></i>Ship
+                                            </button>
+                                        }
+                                        else if (order.Status == OrderStatus.Shipped)
+                                        {
+                                            <button class="btn btn-primary btn-sm" onclick="updateOrderStatus(@order.Id, 'Delivered')">
+                                                <i class="fas fa-check-circle me-1"></i>Mark Delivered
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Completed</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-bag text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">No orders yet</h4>
+            <p class="text-muted">Orders will appear here once customers start buying your products.</p>
+            <a asp-action="AddProduct" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Add Products
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function updateOrderStatus(orderId, status) {
+            const action = status === 'Accepted' ? 'accept' : 
+                          status === 'Rejected' ? 'reject' : 
+                          status === 'Shipped' ? 'ship' : 'deliver';
+            
+            if (confirm(`Are you sure you want to ${action} this order?`)) {
+                fetch('@Url.Action("UpdateOrderStatus", "Farmer")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({ orderId: orderId, status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        showAlert(data.message || 'Error updating order status', 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error updating order status', 'danger');
+                });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+}
+

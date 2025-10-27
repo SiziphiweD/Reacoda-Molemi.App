@@ -1,0 +1,273 @@
+@model RevenueManagementViewModel
+@{
+    ViewData["Title"] = "Revenue Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-success">
+                    <i class="fas fa-chart-pie me-2"></i>Revenue Management
+                </h1>
+                <div class="text-muted">
+                    <i class="fas fa-calendar me-1"></i>
+                    @Model.StartDate.ToString("MMM dd, yyyy") - @Model.EndDate.ToString("MMM dd, yyyy")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Revenue
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.TotalRevenue.ToString("N2")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Platform Commission
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.PlatformCommission.ToString("N2")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Farmer Earnings
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.FarmerEarnings.ToString("N2")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-seedling fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Transactions
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalTransactions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Distribution -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Revenue Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="revenueDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Commission Settings</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Commission Rate:</span>
+                                <div class="input-group" style="width: 120px;">
+                                    <input type="number" class="form-control form-control-sm" id="commissionRate" value="@Model.CommissionRate" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Platform Commission:</span>
+                                <strong class="text-danger">R @Model.PlatformCommission.ToString("N2")</strong>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Farmer Earnings:</span>
+                                <strong class="text-success">R @Model.FarmerEarnings.ToString("N2")</strong>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Total Revenue:</span>
+                                <strong class="text-primary">R @Model.TotalRevenue.ToString("N2")</strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="button" class="btn btn-success btn-sm" onclick="updateCommissionRate()">
+                                <i class="fas fa-save me-1"></i>Update Rate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="monthlyRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Revenue</th>
+                                    <th>Platform Commission</th>
+                                    <th>Farmer Earnings</th>
+                                    <th>Commission Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var month in Model.RevenueByMonth)
+                                {
+                                    <tr>
+                                        <td>@(new DateTime(month.Year, month.Month, 1).ToString("MMM yyyy"))</td>
+                                        <td>R @month.Revenue.ToString("N2")</td>
+                                        <td>R @month.Commission.ToString("N2")</td>
+                                        <td>R @(month.Revenue - month.Commission).ToString("N2")</td>
+                                        <td>@Model.CommissionRate%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Revenue Distribution Chart
+        const revenueDistributionCtx = document.getElementById('revenueDistributionChart').getContext('2d');
+        const revenueDistributionChart = new Chart(revenueDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Platform Commission', 'Farmer Earnings'],
+                datasets: [{
+                    data: [@Model.PlatformCommission, @Model.FarmerEarnings],
+                    backgroundColor: ['#E74C3C', '#1FAA59']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Monthly Revenue Chart
+        const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const monthlyRevenueChart = new Chart(monthlyRevenueCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.RevenueByMonth.Select(x => new DateTime(x.Year, x.Month, 1).ToString("MMM yyyy")))),
+                datasets: [{
+                    label: 'Total Revenue',
+                    data: @Html.Raw(Json.Serialize(Model.RevenueByMonth.Select(x => x.Revenue))),
+                    backgroundColor: 'rgba(31, 170, 89, 0.8)',
+                    borderColor: 'rgb(31, 170, 89)',
+                    borderWidth: 1
+                }, {
+                    label: 'Platform Commission',
+                    data: @Html.Raw(Json.Serialize(Model.RevenueByMonth.Select(x => x.Commission))),
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                    borderColor: 'rgb(231, 76, 60)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function updateCommissionRate() {
+            const newRate = document.getElementById('commissionRate').value;
+            if (confirm(`Are you sure you want to update the commission rate to ${newRate}%?`)) {
+                showToast('Commission rate updated successfully!', 'success');
+                // In a real application, you would make an API call here
+            }
+        }
+    </script>
+}

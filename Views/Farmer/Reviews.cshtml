@@ -1,0 +1,288 @@
+@model List<ProductReview>
+@{
+    ViewData["Title"] = "Product Reviews";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-success">
+                    <i class="fas fa-star me-2"></i>Product Reviews
+                </h2>
+                <div class="text-muted">
+                    @Model.Count reviews total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Review Statistics -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-white-50 small">Total Reviews</div>
+                                <div class="h4">@Model.Count</div>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-comments fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-white-50 small">Average Rating</div>
+                                <div class="h4">@(Model.Any() ? Model.Average(r => r.Rating).ToString("F1") : "0.0")</div>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-star fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-white-50 small">5-Star Reviews</div>
+                                <div class="h4">@Model.Count(r => r.Rating == 5)</div>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-star fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div class="text-white-50 small">This Month</div>
+                                <div class="h4">@Model.Count(r => r.CreatedAt >= DateTime.UtcNow.AddMonths(-1))</div>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-calendar fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-list me-2"></i>All Reviews
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var review in Model.OrderByDescending(r => r.CreatedAt))
+                        {
+                            <div class="border-bottom pb-4 mb-4">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-start">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <h6 class="mb-0 me-3">@review.Buyer.FirstName @review.Buyer.LastName</h6>
+                                                    <div class="rating">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= review.Rating)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-muted"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <h6 class="text-success mb-2">@review.Product.Name</h6>
+                                                <p class="mb-2">@review.Comment</p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @review.CreatedAt.ToString("MMMM dd, yyyy 'at' HH:mm")
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="mb-2">
+                                            <span class="badge bg-@(review.Rating switch {
+                                                5 => "success",
+                                                4 => "primary", 
+                                                3 => "warning",
+                                                2 => "danger",
+                                                1 => "danger",
+                                                _ => "secondary"
+                                            }) fs-6">
+                                                @review.Rating Star@(review.Rating != 1 ? "s" : "")
+                                            </span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            @review.CreatedAt.ToString("MMM dd, yyyy")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Distribution -->
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-chart-bar me-2"></i>Rating Distribution
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @for (int rating = 5; rating >= 1; rating--)
+                        {
+                            var count = Model.Count(r => r.Rating == rating);
+                            var percentage = Model.Any() ? (count * 100.0 / Model.Count) : 0;
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <span class="fw-bold">@rating</span>
+                                    <i class="fas fa-star text-warning"></i>
+                                </div>
+                                <div class="flex-grow-1 me-3">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" 
+                                             style="width: @percentage%" 
+                                             aria-valuenow="@percentage" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-muted small">
+                                    @count (@percentage.ToString("F1")%)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-trophy me-2"></i>Top Rated Products
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var topProducts = Model
+                                .GroupBy(r => r.Product)
+                                .Select(g => new { Product = g.Key, AvgRating = g.Average(r => r.Rating), Count = g.Count() })
+                                .OrderByDescending(p => p.AvgRating)
+                                .Take(5);
+                        }
+                        
+                        @if (topProducts.Any())
+                        {
+                            @foreach (var product in topProducts)
+                            {
+                                <div class="d-flex align-items-center mb-3">
+                                    <img src="@product.Product.ImageUrl" alt="@product.Product.Name" 
+                                         class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">@product.Product.Name</div>
+                                        <div class="small text-muted">@product.Count review@(product.Count != 1 ? "s" : "")</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= Math.Round(product.AvgRating))
+                                                {
+                                                    <i class="fas fa-star text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star text-muted"></i>
+                                                }
+                                            }
+                                        </div>
+                                        <div class="small text-muted">@product.AvgRating.ToString("F1")</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-3">
+                                <i class="fas fa-star fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">No products rated yet</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-star fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted mb-3">No Reviews Yet</h4>
+                        <p class="text-muted mb-4">When buyers review your products, their feedback will appear here.</p>
+                        <a asp-action="MyProducts" class="btn btn-success">
+                            <i class="fas fa-boxes me-2"></i>Manage Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .rating i {
+        font-size: 0.9rem;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .border-bottom:last-child {
+        border-bottom: none !important;
+    }
+</style>
