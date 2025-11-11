@@ -9,7 +9,7 @@ services:
   - type: web
     name: reacoda-molemi-app
     env: dotnet
-    buildCommand: dotnet publish -c Release -o ./publish
+    buildCommand: dotnet publish ReacodeApp.csproj -c Release -o ./publish
     startCommand: dotnet ./publish/ReacodeApp.dll
     envVars:
       - key: ASPNETCORE_ENVIRONMENT

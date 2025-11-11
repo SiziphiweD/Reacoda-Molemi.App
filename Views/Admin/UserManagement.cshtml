@@ -3,6 +3,8 @@
     ViewData["Title"] = "User Management";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
@@ -11,7 +13,7 @@
                     <i class="fas fa-users me-2"></i>User Management
                 </h1>
                 <div class="text-muted">
-                    Total Users: @Model.Count
+                    Total Users: @(Model?.Count ?? 0)
                 </div>
             </div>
         </div>
@@ -26,20 +28,20 @@
                         <div class="col-md-3">
                             <label class="form-label">Filter by Role</label>
                             <select name="role" class="form-select">
-                                <option value="all">All Roles</option>
-                                <option value="Farmer">Farmers</option>
-                                <option value="Buyer">Buyers</option>
-                                <option value="Admin">Admins</option>
+                                <option value="all" selected="@(ViewBag.Role == "all" || ViewBag.Role == null)">All Roles</option>
+                                <option value="Farmer" selected="@(ViewBag.Role == "Farmer")">Farmers</option>
+                                <option value="Buyer" selected="@(ViewBag.Role == "Buyer")">Buyers</option>
+                                <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admins</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Filter by Status</label>
                             <select name="status" class="form-select">
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="verified">Verified</option>
-                                <option value="unverified">Unverified</option>
+                                <option value="all" selected="@(ViewBag.Status == "all" || ViewBag.Status == null)">All Status</option>
+                                <option value="active" selected="@(ViewBag.Status == "active")">Active</option>
+                                <option value="inactive" selected="@(ViewBag.Status == "inactive")">Inactive</option>
+                                <option value="verified" selected="@(ViewBag.Status == "verified")">Verified</option>
+                                <option value="unverified" selected="@(ViewBag.Status == "unverified")">Unverified</option>
                             </select>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
@@ -64,7 +66,14 @@
                     <h6 class="m-0 font-weight-bold text-primary">Users List</h6>
                 </div>
                 <div class="card-body">
-                    @if (Model.Any())
+                    @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (Model != null && Model.Any())
                     {
                         <div class="table-responsive">
                             <table class="table table-bordered" id="usersTable">
@@ -89,10 +98,10 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
-                                                        @user.FirstName.Substring(0, 1).ToUpper()
+                                                        @(!string.IsNullOrEmpty(user.FirstName) ? user.FirstName.Substring(0, 1).ToUpper() : "U")
                                                     </div>
                                                     <div>
-                                                        <div class="fw-bold">@user.FirstName @user.LastName</div>
+                                                        <div class="fw-bold">@(!string.IsNullOrEmpty(user.FirstName) ? user.FirstName : "") @(!string.IsNullOrEmpty(user.LastName) ? user.LastName : "")</div>
                                                         <small class="text-muted">@user.Email</small>
                                                     </div>
                                                 </div>
@@ -199,7 +208,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
                 body: JSON.stringify({ userId: userId })
             })
@@ -222,7 +231,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
                 body: JSON.stringify({ userId: userId })
             })
@@ -245,7 +254,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
                 body: JSON.stringify({ userId: userId })
             })
@@ -268,7 +277,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                 },
                 body: JSON.stringify({ userId: userId })
             })

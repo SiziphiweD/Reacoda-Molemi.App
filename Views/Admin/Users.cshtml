@@ -3,6 +3,8 @@
     ViewData["Title"] = "User Management";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -28,8 +30,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var user in Model)
+                        @if (Model != null && Model.Any())
                         {
+                            @foreach (var user in Model)
+                            {
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -41,7 +45,7 @@
                                             else
                                             {
                                                 <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                    @user.FirstName.Substring(0, 1)@user.LastName.Substring(0, 1)
+                                                    @(!string.IsNullOrEmpty(user.FirstName) ? user.FirstName.Substring(0, 1) : "U")@(!string.IsNullOrEmpty(user.LastName) ? user.LastName.Substring(0, 1) : "")
                                                 </div>
                                             }
                                         </div>
@@ -90,6 +94,16 @@
                                     </div>
                                 </td>
                             </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <p>No users found</p>
+                                </td>
+                            </tr>
                         }
                     </tbody>
                 </table>
@@ -102,19 +116,22 @@
     <script>
         function updateUserStatus(userId, isActive) {
             const action = isActive ? 'activate' : 'suspend';
+            const actionUrl = isActive ? '@Url.Action("ActivateUser", "Admin")' : '@Url.Action("SuspendUser", "Admin")';
+            
             if (confirm(`Are you sure you want to ${action} this user?`)) {
-                fetch('@Url.Action("UpdateUserStatus", "Admin")', {
+                fetch(actionUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
                     },
-                    body: JSON.stringify({ userId: userId, isActive: isActive })
+                    body: JSON.stringify({ userId: userId })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload();
+                        showAlert(data.message || 'User status updated successfully', 'success');
+                        setTimeout(() => location.reload(), 1500);
                     } else {
                         showAlert(data.message || 'Error updating user status', 'danger');
                     }

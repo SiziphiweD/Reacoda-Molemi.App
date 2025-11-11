@@ -65,46 +65,56 @@ namespace ReacodeApp.Controllers
         // User Management
         public async Task<IActionResult> UserManagement(string role = "all", string status = "all")
         {
-            if (!_sessionService.IsLoggedIn() || (_sessionService.GetUser()?.Role != UserRole.Admin && _sessionService.GetUser()?.Role != UserRole.SuperAdmin))
+            try
             {
-                return RedirectToAction("Login", "Auth");
-            }
-
-            var query = _context.Users.AsQueryable();
-
-            if (role != "all")
-            {
-                if (Enum.TryParse<UserRole>(role, true, out var userRole))
+                if (!_sessionService.IsLoggedIn() || (_sessionService.GetUser()?.Role != UserRole.Admin && _sessionService.GetUser()?.Role != UserRole.SuperAdmin))
                 {
-                    query = query.Where(u => u.Role == userRole);
+                    return RedirectToAction("Login", "Auth");
                 }
-            }
 
-            if (status != "all")
-            {
-                switch (status.ToLower())
+                var query = _context.Users.AsQueryable();
+
+                if (role != "all")
                 {
-                    case "active":
-                        query = query.Where(u => u.IsActive);
-                        break;
-                    case "inactive":
-                        query = query.Where(u => !u.IsActive);
-                        break;
-                    case "verified":
-                        query = query.Where(u => u.IsVerified);
-                        break;
-                    case "unverified":
-                        query = query.Where(u => !u.IsVerified);
-                        break;
+                    if (Enum.TryParse<UserRole>(role, true, out var userRole))
+                    {
+                        query = query.Where(u => u.Role == userRole);
+                    }
                 }
+
+                if (status != "all")
+                {
+                    switch (status.ToLower())
+                    {
+                        case "active":
+                            query = query.Where(u => u.IsActive);
+                            break;
+                        case "inactive":
+                            query = query.Where(u => !u.IsActive);
+                            break;
+                        case "verified":
+                            query = query.Where(u => u.IsVerified);
+                            break;
+                        case "unverified":
+                            query = query.Where(u => !u.IsVerified);
+                            break;
+                    }
+                }
+
+                var users = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
+
+                ViewBag.Role = role;
+                ViewBag.Status = status;
+
+                return View(users ?? new List<User>());
             }
-
-            var users = await query.OrderByDescending(u => u.CreatedAt).ToListAsync();
-
-            ViewBag.Role = role;
-            ViewBag.Status = status;
-
-            return View(users);
+            catch (Exception ex)
+            {
+                // Log the error (you can add logging here)
+                // For now, return an empty list to prevent crashes
+                ViewBag.Error = "An error occurred while loading users. Please try again.";
+                return View(new List<User>());
+            }
         }
 
         [HttpPost]
@@ -147,6 +157,27 @@ namespace ReacodeApp.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "User suspended successfully" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActivateUser(int userId)
+        {
+            if (!_sessionService.IsLoggedIn() || (_sessionService.GetUser()?.Role != UserRole.Admin && _sessionService.GetUser()?.Role != UserRole.SuperAdmin))
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "User activated successfully" });
         }
 
         [HttpPost]
