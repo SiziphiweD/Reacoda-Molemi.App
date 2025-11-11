@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ReacodeApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+909a0c15713e712c0207283d556a11c206ce7a41")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+94b2eafb11adfec6b07666f60a3f0e1393f9858a")]
 [assembly: System.Reflection.AssemblyProductAttribute("ReacodeApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ReacodeApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

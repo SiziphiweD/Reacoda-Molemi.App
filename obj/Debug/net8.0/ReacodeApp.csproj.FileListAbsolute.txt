@@ -435,3 +435,5 @@ C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\Swas
 C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\DotNetEnv.dll
+C:\Users\Sizip\OneDrive\Desktop\REACODA PTY LTD\Molemi.app\bin\Debug\net8.0\Sprache.dll
