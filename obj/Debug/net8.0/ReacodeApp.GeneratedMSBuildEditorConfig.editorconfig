@@ -84,6 +84,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnV5ZXJcQ2hlY2tvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Buyer/ConfirmDelivery.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnV5ZXJcQ29uZmlybURlbGl2ZXJ5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Buyer/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQnV5ZXJcRGFzaGJvYXJkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -140,6 +144,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyXEVkaXRQcm9kdWN0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Farmer/MarkShipped.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyXE1hcmtTaGlwcGVkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Farmer/Messages.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyXE1lc3NhZ2VzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -166,6 +174,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Farmer/ProfileSettings.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyXFByb2ZpbGVTZXR0aW5ncy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Farmer/RejectOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFybWVyXFJlamVjdE9yZGVyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Sizip/OneDrive/Desktop/REACODA PTY LTD/Molemi.app/Views/Farmer/Reviews.cshtml]

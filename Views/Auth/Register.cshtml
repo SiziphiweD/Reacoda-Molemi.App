@@ -3,127 +3,218 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-custom border-0">
-                <div class="card-header text-center py-4">
-                    <h3 class="fw-bold mb-0">
-                        <i class="fas fa-user-plus me-2"></i>Join Reacoda Molemi
-                    </h3>
-                    <p class="text-white-50 mb-0">Create your account to get started</p>
-                </div>
-                <div class="card-body p-5">
-                    <form asp-action="Register" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label asp-for="FirstName" class="form-label"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input asp-for="FirstName" class="form-control" placeholder="First name" />
-                                </div>
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <label asp-for="LastName" class="form-label"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input asp-for="LastName" class="form-control" placeholder="Last name" />
-                                </div>
-                                <span asp-validation-for="LastName" class="text-danger"></span>
-                            </div>
+<section class="login-section">
+    <div class="container">
+        <div class="row justify-content-center py-5">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <div class="login-icon">
+                            <i class="fas fa-user-plus"></i>
                         </div>
+                        <h1 class="login-title">Join Reacoda Molemi</h1>
+                        <p class="login-subtitle">Create your account to get started</p>
+                    </div>
+                    <div class="login-card-body">
+                        @if (TempData["InfoMessage"] != null)
+                        {
+                            <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <i class="fas fa-info-circle" style="font-size: 1.25rem; margin-top: 0.125rem;"></i>
+                                    <div style="flex: 1;">
+                                        <strong style="display: block; margin-bottom: 0.5rem;">Account Required</strong>
+                                        <p style="margin: 0 0 0.75rem 0; line-height: 1.5;">@TempData["InfoMessage"]</p>
+                                        <p style="margin: 0;">
+                                            <small>Already have an account? 
+                                                <a href="@Url.Action("Login", "Auth", new { returnUrl = ViewBag.ReturnUrl })" class="login-signup-link" style="color: var(--primary-green); font-weight: 600; text-decoration: underline;">Sign in here</a>
+                                            </small>
+                                        </p>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        }
+                        <form action="@Url.Action("Register", "Auth")" method="post" class="login-form">
+                            @Html.AntiForgeryToken()
+                            @if (ViewBag.ReturnUrl != null)
+                            {
+                                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                            }
+                            <div asp-validation-summary="ModelOnly" class="login-error-alert" role="alert"></div>
+                            
+                            <div class="form-row-register">
+                                <div class="form-group-login">
+                                    <label asp-for="FirstName" class="form-label-login">
+                                        <i class="fas fa-user"></i>
+                                        First Name
+                                    </label>
+                                    <input asp-for="FirstName" class="form-input-login" placeholder="Enter your first name" />
+                                    <span asp-validation-for="FirstName" class="form-error"></span>
+                                </div>
+                                <div class="form-group-login">
+                                    <label asp-for="LastName" class="form-label-login">
+                                        <i class="fas fa-user"></i>
+                                        Last Name
+                                    </label>
+                                    <input asp-for="LastName" class="form-input-login" placeholder="Enter your last name" />
+                                    <span asp-validation-for="LastName" class="form-error"></span>
+                                </div>
+                            </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Email" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="Email" class="form-label-login">
                                     <i class="fas fa-envelope"></i>
-                                </span>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                                    Email Address
+                                </label>
+                                <input asp-for="Email" class="form-input-login" placeholder="Enter your email address" />
+                                <span asp-validation-for="Email" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4">
-                            <label asp-for="PhoneNumber" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="PhoneNumber" class="form-label-login">
                                     <i class="fas fa-phone"></i>
-                                </span>
-                                <input asp-for="PhoneNumber" class="form-control" placeholder="Phone number (optional)" />
+                                    Phone Number <span class="text-muted" style="font-weight: 400; font-size: 0.85em;">(optional)</span>
+                                </label>
+                                <input asp-for="PhoneNumber" class="form-input-login" placeholder="Enter your phone number" />
+                                <span asp-validation-for="PhoneNumber" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Password" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="Password" class="form-label-login">
                                     <i class="fas fa-lock"></i>
-                                </span>
-                                <input asp-for="Password" class="form-control" placeholder="Create a password" />
+                                    Password
+                                </label>
+                                <input asp-for="Password" class="form-input-login" placeholder="Create a password" />
+                                <span asp-validation-for="Password" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4">
-                            <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="ConfirmPassword" class="form-label-login">
                                     <i class="fas fa-lock"></i>
-                                </span>
-                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+                                    Confirm Password
+                                </label>
+                                <input asp-for="ConfirmPassword" class="form-input-login" placeholder="Confirm your password" />
+                                <span asp-validation-for="ConfirmPassword" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4">
-                            <label asp-for="SelectedRole" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="SelectedRole" class="form-label-login">
                                     <i class="fas fa-user-tag"></i>
-                                </span>
-                                <select asp-for="SelectedRole" class="form-select">
+                                    Account Type
+                                </label>
+                                <select asp-for="SelectedRole" class="form-select-login" id="SelectedRole">
                                     <option value="@((int)ReacodeApp.Models.UserRole.Buyer)">🛒 Buyer - I want to buy fresh produce</option>
                                     <option value="@((int)ReacodeApp.Models.UserRole.Farmer)">🌱 Farmer - I want to sell my products</option>
                                 </select>
+                                <span asp-validation-for="SelectedRole" class="form-error"></span>
+                                <div class="form-info-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Admin and Super Admin accounts are created by system administrators only.</span>
+                                </div>
                             </div>
-                            <span asp-validation-for="SelectedRole" class="text-danger"></span>
-                            <div class="form-text">
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Admin and Super Admin accounts are created by system administrators only.
-                                </small>
+
+                            <div class="login-actions">
+                                <button type="submit" class="btn-login-submit">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>Create Account</span>
+                                </button>
                             </div>
-                        </div>
 
-                        <div class="d-grid mb-4">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-user-plus me-2"></i>Create Account
-                            </button>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="mb-0">Already have an account? 
-                                <a asp-action="Login" class="text-success fw-bold text-decoration-none">
-                                    Sign in here
-                                </a>
-                            </p>
-                        </div>
-                    </form>
+                            <div class="login-footer">
+                                <p class="login-signup-text" style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                                    <strong>Already have an account?</strong><br />
+                                    <a href="@Url.Action("Login", "Auth", new { returnUrl = ViewBag.ReturnUrl })" class="login-signup-link" style="color: var(--primary-green); font-weight: 600; font-size: 1.1em; text-decoration: underline;">
+                                        <i class="fas fa-sign-in-alt me-1"></i>Sign in here
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure role is selected from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const roleParam = urlParams.get('role');
+            
+            if (roleParam && roleParam.toLowerCase() === 'farmer') {
+                const roleSelect = document.querySelector('select[name="SelectedRole"]');
+                if (roleSelect) {
+                    // Find the Farmer option - check all options to find the one with Farmer text
+                    const options = roleSelect.querySelectorAll('option');
+                    for (let option of options) {
+                        if (option.textContent.includes('Farmer')) {
+                            roleSelect.value = option.value;
+                            // Trigger change event to ensure it's properly set
+                            roleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Check if user was redirected here because they need to login
+            const loginRequired = sessionStorage.getItem('loginRequired');
+            const loginMessage = sessionStorage.getItem('loginMessage');
+            
+            if (loginRequired === 'true' && loginMessage) {
+                // Display error alert at the top of the form
+                showLoginRequiredAlert(loginMessage);
+                
+                // Clear sessionStorage
+                sessionStorage.removeItem('loginRequired');
+                sessionStorage.removeItem('loginMessage');
+            }
+        });
+        
+        function showLoginRequiredAlert(message) {
+            // Get returnUrl from query string
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnUrl = urlParams.get('returnUrl') || '';
+            const loginUrl = '@Url.Action("Login", "Auth")' + (returnUrl ? '?returnUrl=' + encodeURIComponent(returnUrl) : '');
+            
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'login-error-alert';
+            alertDiv.setAttribute('role', 'alert');
+            alertDiv.style.marginBottom = '1.5rem';
+            alertDiv.style.background = '#fff3cd';
+            alertDiv.style.borderColor = '#ffc107';
+            alertDiv.style.color = '#856404';
+            alertDiv.innerHTML = `
+                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.25rem; margin-top: 0.125rem; color: #ffc107;"></i>
+                    <div style="flex: 1;">
+                        <strong style="display: block; margin-bottom: 0.5rem;">Login Required</strong>
+                        <p style="margin: 0 0 0.75rem 0; line-height: 1.5;">${message}</p>
+                        <p style="margin: 0;">
+                            <small>Already have an account? 
+                                <a href="${loginUrl}" class="login-signup-link" style="color: var(--primary-green); font-weight: 600;">Sign in here</a>
+                            </small>
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="opacity: 0.5;"></button>
+                </div>
+            `;
+            
+            // Insert alert at the top of the form
+            const form = document.querySelector('form');
+            if (form) {
+                const validationSummary = form.querySelector('.login-error-alert');
+                if (validationSummary) {
+                    validationSummary.parentNode.insertBefore(alertDiv, validationSummary);
+                } else {
+                    form.insertBefore(alertDiv, form.firstChild);
+                }
+            }
+        }
+    </script>
 }

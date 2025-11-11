@@ -16,8 +16,16 @@
                             <i class="fas fa-user"></i>
                         </div>
                         <div>
-                            <h4 class="mb-0">@farmer.FirstName @farmer.LastName</h4>
-                            <small class="text-muted">@farmer.Email</small>
+                            @if (farmer != null)
+                            {
+                                <h4 class="mb-0">@farmer.FirstName @farmer.LastName</h4>
+                                <small class="text-muted">@farmer.Email</small>
+                            }
+                            else
+                            {
+                                <h4 class="mb-0">Unknown User</h4>
+                                <small class="text-muted">No email available</small>
+                            }
                         </div>
                     </div>
                 </div>
@@ -43,7 +51,7 @@
                                 <div class="message farmer-message">
                                     <div class="message-content">
                                         <div class="message-header">
-                                            <strong>@farmer.FirstName @farmer.LastName</strong>
+                                            <strong>@(farmer?.FirstName ?? "Farmer") @(farmer?.LastName ?? "")</strong>
                                             <small class="text-muted">@DateTime.Now.AddMinutes(-30).ToString("h:mm tt")</small>
                                         </div>
                                         <div class="message-text">
@@ -71,7 +79,7 @@
                                 <div class="message farmer-message">
                                     <div class="message-content">
                                         <div class="message-header">
-                                            <strong>@farmer.FirstName @farmer.LastName</strong>
+                                            <strong>@(farmer?.FirstName ?? "Farmer") @(farmer?.LastName ?? "")</strong>
                                             <small class="text-muted">@DateTime.Now.AddMinutes(-20).ToString("h:mm tt")</small>
                                         </div>
                                         <div class="message-text">
@@ -119,30 +127,43 @@
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="text-center mb-3">
-                                <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 24px;">
-                                    <i class="fas fa-user"></i>
+                            @if (farmer != null)
+                            {
+                                <div class="text-center mb-3">
+                                    <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 24px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h5 class="mb-0">@farmer.FirstName @farmer.LastName</h5>
+                                    <small class="text-muted">@farmer.Email</small>
                                 </div>
-                                <h5 class="mb-0">@farmer.FirstName @farmer.LastName</h5>
-                                <small class="text-muted">@farmer.Email</small>
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="mb-2">
-                                <strong>Phone:</strong>
-                                <span class="text-muted">@(farmer.PhoneNumber ?? "Not provided")</span>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <strong>Location:</strong>
-                                <span class="text-muted">@(farmer.City ?? "Not provided")</span>
-                            </div>
-                            
-                            <div class="mb-2">
-                                <strong>Member Since:</strong>
-                                <span class="text-muted">@farmer.CreatedAt.ToString("MMM yyyy")</span>
-                            </div>
+                                
+                                <hr>
+                                
+                                <div class="mb-2">
+                                    <strong>Phone:</strong>
+                                    <span class="text-muted">@(farmer.PhoneNumber ?? "Not provided")</span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <strong>Location:</strong>
+                                    <span class="text-muted">@(farmer.City ?? "Not provided")</span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <strong>Member Since:</strong>
+                                    <span class="text-muted">@farmer.CreatedAt.ToString("MMM yyyy")</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center mb-3">
+                                    <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 24px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h5 class="mb-0">Unknown Farmer</h5>
+                                    <small class="text-muted">Information not available</small>
+                                </div>
+                            }
                         </div>
                     </div>
 
@@ -344,10 +365,11 @@
         const now = new Date();
         const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         
+        const farmerName = '@(farmer != null ? $"{farmer.FirstName} {farmer.LastName}" : "Farmer")';
         messageDiv.innerHTML = `
             <div class="message-content">
                 <div class="message-header">
-                    <strong>${sender === 'buyer' ? 'You' : '@farmer.FirstName @farmer.LastName'}</strong>
+                    <strong>${sender === 'buyer' ? 'You' : farmerName}</strong>
                     <small class="text-muted">${timeString}</small>
                 </div>
                 <div class="message-text">${text}</div>

@@ -8,11 +8,27 @@
         <div class="col-lg-8">
             <!-- Success Header -->
             <div class="text-center mb-5">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
                 <div class="success-icon mb-4">
                     <i class="fas fa-check-circle fa-5x text-success"></i>
                 </div>
-                <h1 class="text-success fw-bold">Order Confirmed!</h1>
-                <p class="text-muted fs-5">Thank you for your order. We'll notify you when it's ready for delivery.</p>
+                <h1 class="text-success fw-bold">Order Placed Successfully!</h1>
+                <p class="text-muted fs-5">
+                    @if (Model.Status == OrderStatus.Pending)
+                    {
+                        <text>Your order is pending farmer approval. You'll be notified once the farmer accepts or rejects your order.</text>
+                    }
+                    else
+                    {
+                        <text>Thank you for your order. We'll notify you when it's ready for delivery.</text>
+                    }
+                </p>
             </div>
 
             <!-- Order Details Card -->
@@ -27,7 +43,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <strong>Order Number:</strong>
-                                <div class="text-primary fs-5">#@Model.Id</div>
+                                <div class="text-primary fs-5">#@Model.OrderNumber</div>
                             </div>
                             <div class="mb-3">
                                 <strong>Order Date:</strong>
@@ -36,12 +52,18 @@
                             <div class="mb-3">
                                 <strong>Status:</strong>
                                 <span class="badge bg-warning fs-6">@Model.Status</span>
+                                @if (Model.Status == OrderStatus.Pending && Model.ResponseDeadline.HasValue)
+                                {
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-clock me-1"></i>Farmer has until @Model.ResponseDeadline.Value.ToString("HH:mm") UTC to respond
+                                    </div>
+                                }
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <strong>Farmer:</strong>
-                                <div>@Model.Farmer.FirstName @Model.Farmer.LastName</div>
+                                <div>@(Model.Farmer != null ? $"{Model.Farmer.FirstName} {Model.Farmer.LastName}" : "N/A")</div>
                             </div>
                             <div class="mb-3">
                                 <strong>Total Amount:</strong>
@@ -100,7 +122,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-boxes me-2"></i>Order Items (@Model.OrderItems.Count)
+                        <i class="fas fa-boxes me-2"></i>Order Items (@(Model.OrderItems?.Count ?? 0))
                     </h6>
                 </div>
                 <div class="card-body">
@@ -115,24 +137,53 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model.OrderItems)
+                                @if (Model.OrderItems != null && Model.OrderItems.Any())
+                                {
+                                    @foreach (var item in Model.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (item.Product != null)
+                                                    {
+                                                        @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                                                        {
+                                                            <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
+                                                                 class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;"
+                                                                 onerror="this.src='/images/default-product.jpg'; this.onerror=null;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                                <i class="fas fa-image text-muted"></i>
+                                                            </div>
+                                                        }
+                                                        <div>
+                                                            <div class="fw-bold">@item.Product.Name</div>
+                                                            <small class="text-muted">@(item.Product.Category?.Name ?? "N/A")</small>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div>
+                                                            <div class="fw-bold text-muted">Product Not Found</div>
+                                                            <small class="text-muted">Product ID: @item.ProductId</small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@item.Quantity kg</span>
+                                            </td>
+                                            <td>R @item.UnitPrice.ToString("N2")</td>
+                                            <td class="fw-bold">R @item.TotalPrice.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
                                 {
                                     <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
-                                                     class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <div class="fw-bold">@item.Product.Name</div>
-                                                    <small class="text-muted">@item.Product.Category.Name</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary">@item.Quantity kg</span>
-                                        </td>
-                                        <td>R @item.UnitPrice.ToString("N2")</td>
-                                        <td class="fw-bold">R @item.TotalPrice.ToString("N2")</td>
+                                        <td colspan="4" class="text-center text-muted">No items found in this order.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -195,7 +246,7 @@
                         </a>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <a asp-action="Shop" class="btn btn-success w-100">
+                        <a asp-controller="Shop" asp-action="Index" class="btn btn-success w-100">
                             <i class="fas fa-store me-2"></i>Continue Shopping
                         </a>
                     </div>
@@ -213,15 +264,22 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Contact Farmer</h6>
-                            <p class="text-muted mb-2">@Model.Farmer.FirstName @Model.Farmer.LastName</p>
-                            <p class="text-muted mb-2">
-                                <i class="fas fa-envelope me-2"></i>@Model.Farmer.Email
-                            </p>
-                            @if (!string.IsNullOrEmpty(Model.Farmer.PhoneNumber))
+                            @if (Model.Farmer != null)
                             {
-                                <p class="text-muted mb-0">
-                                    <i class="fas fa-phone me-2"></i>@Model.Farmer.PhoneNumber
+                                <p class="text-muted mb-2">@Model.Farmer.FirstName @Model.Farmer.LastName</p>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-envelope me-2"></i>@Model.Farmer.Email
                                 </p>
+                                @if (!string.IsNullOrEmpty(Model.Farmer.PhoneNumber))
+                                {
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-phone me-2"></i>@Model.Farmer.PhoneNumber
+                                    </p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-2">Farmer information not available</p>
                             }
                         </div>
                         <div class="col-md-6">

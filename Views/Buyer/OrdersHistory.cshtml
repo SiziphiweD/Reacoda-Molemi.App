@@ -6,6 +6,20 @@
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="fw-bold text-success">
                     <i class="fas fa-history me-2"></i>Order History
@@ -111,7 +125,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                <strong>#@order.Id</strong>
+                                                <strong>#@order.OrderNumber</strong>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -141,6 +155,7 @@
                                                 <span class="badge bg-@(order.Status switch {
                                                     OrderStatus.Pending => "warning",
                                                     OrderStatus.Accepted => "info",
+                                                    OrderStatus.Rejected => "danger",
                                                     OrderStatus.Shipped => "primary",
                                                     OrderStatus.Delivered => "success",
                                                     OrderStatus.Cancelled => "danger",
@@ -148,6 +163,38 @@
                                                 }) fs-6">
                                                     @order.Status
                                                 </span>
+                                                @if (order.Status == OrderStatus.Rejected && !string.IsNullOrWhiteSpace(order.RejectionReason))
+                                                {
+                                                    <div class="small text-danger mt-1">
+                                                        <i class="fas fa-info-circle me-1"></i>@order.RejectionReason
+                                                    </div>
+                                                }
+                                                @if (order.Status == OrderStatus.Accepted && order.EstimatedDeliveryDate.HasValue)
+                                                {
+                                                    <div class="small text-info mt-1">
+                                                        <i class="fas fa-calendar me-1"></i>Est. Delivery: @order.EstimatedDeliveryDate.Value.ToString("MMM dd, yyyy")
+                                                    </div>
+                                                }
+                                                @if (order.Status == OrderStatus.Shipped && order.EstimatedDeliveryDate.HasValue)
+                                                {
+                                                    <div class="small text-primary mt-1">
+                                                        <i class="fas fa-truck me-1"></i>Est. Delivery: @order.EstimatedDeliveryDate.Value.ToString("MMM dd, yyyy")
+                                                        @if (!string.IsNullOrWhiteSpace(order.TrackingNumber))
+                                                        {
+                                                            <text><br /><i class="fas fa-barcode me-1"></i>Tracking: @order.TrackingNumber</text>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (order.Status == OrderStatus.Arrived)
+                                                {
+                                                    <div class="small text-info mt-1">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>Farmer has arrived! Please confirm delivery.
+                                                        @if (order.ArrivedDate.HasValue)
+                                                        {
+                                                            <br /><small>Arrived: @order.ArrivedDate.Value.ToString("MMM dd, yyyy HH:mm")</small>
+                                                        }
+                                                    </div>
+                                                }
                                             </td>
                                             <td>
                                                 <div>@order.CreatedAt.ToString("MMM dd, yyyy")</div>
@@ -155,15 +202,21 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a asp-action="OrderTracking" asp-route-id="@order.Id" class="btn btn-outline-primary btn-sm">
-                                                        <i class="fas fa-search me-1"></i>Track
+                                                <a asp-action="OrderTracking" asp-route-id="@order.Id" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-search me-1"></i>Track
+                                                </a>
+                                                @if (order.Status == OrderStatus.Arrived)
+                                                {
+                                                    <a asp-action="ConfirmDelivery" asp-route-id="@order.Id" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-check-circle me-1"></i>Confirm Delivery
                                                     </a>
-                                                    @if (order.Status == OrderStatus.Delivered)
-                                                    {
-                                                        <button class="btn btn-outline-success btn-sm" onclick="openReviewModal(@order.Id)">
-                                                            <i class="fas fa-star me-1"></i>Review
-                                                        </button>
-                                                    }
+                                                }
+                                                @if (order.Status == OrderStatus.Delivered)
+                                                {
+                                                    <button class="btn btn-outline-success btn-sm" onclick="openReviewModal(@order.Id)">
+                                                        <i class="fas fa-star me-1"></i>Review
+                                                    </button>
+                                                }
                                                 </div>
                                             </td>
                                         </tr>

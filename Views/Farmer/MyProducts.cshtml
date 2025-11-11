@@ -4,83 +4,117 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold text-success">
-                    <i class="fas fa-boxes me-2"></i>My Products
-                </h2>
-                <a asp-action="AddProduct" class="btn btn-success">
-                    <i class="fas fa-plus me-2"></i>Add New Product
-                </a>
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="service-section-header">
+                <div class="service-section-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <h2 class="service-section-title">My Products</h2>
+                <p class="service-section-subtitle">Manage your product listings and inventory</p>
             </div>
         </div>
     </div>
 
+    <!-- Action Button -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <a asp-action="AddProduct" class="btn btn-success btn-lg">
+                <i class="fas fa-plus me-2"></i>Add New Product
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+    }
+
     @if (Model.Any())
     {
-        <div class="row">
+        <div class="products-grid-farmer">
             @foreach (var product in Model)
             {
-                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-4">
-                    <div class="card shadow h-100">
-                        <div class="position-relative">
-                            <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" style="height: 150px; object-fit: cover;">
-                            <div class="position-absolute top-0 end-0 m-2">
+                <div class="product-card-modern-farmer">
+                    <div class="product-image-wrapper-farmer">
+                        <img src="@product.ImageUrl" class="product-image-modern-farmer" alt="@product.Name" onerror="this.src='/images/default-product.jpg'">
+                        <div class="product-badge-farmer">
+                            @if (product.Status == ProductStatus.Pending)
+                            {
+                                <span class="product-status-badge badge-pending">Pending</span>
+                            }
+                            else if (product.Status == ProductStatus.Approved && product.IsAvailable)
+                            {
+                                <span class="product-status-badge badge-available">Available</span>
+                            }
+                            else if (product.Status == ProductStatus.Rejected)
+                            {
+                                <span class="product-status-badge badge-rejected">Rejected</span>
+                            }
+                            else
+                            {
+                                <span class="product-status-badge badge-unavailable">Unavailable</span>
+                            }
+                        </div>
+                        <div class="product-category-badge-farmer">
+                            <span>@product.Category.Name</span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-info-farmer">
+                        <h3 class="product-name-farmer">@product.Name</h3>
+                        <p class="product-description-farmer">@(product.Description.Length > 80 ? product.Description.Substring(0, 80) + "..." : product.Description)</p>
+                        
+                        <div class="product-meta-farmer">
+                            <div class="product-price-info-farmer">
+                                <span class="price-label">Price:</span>
+                                <span class="price-value-farmer">R @product.PricePerKg.ToString("F2")/kg</span>
+                            </div>
+                            <div class="product-stock-info-farmer">
+                                <i class="fas fa-box"></i>
+                                <span>@product.AvailableQuantity kg</span>
+                            </div>
+                        </div>
+                        
+                        <div class="product-footer-farmer">
+                            <div class="product-actions-farmer">
+                                <a asp-action="EditProduct" asp-route-id="@product.Id" class="product-btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit</span>
+                                </a>
                                 @if (product.IsAvailable)
                                 {
-                                    <span class="badge bg-success">Available</span>
+                                    <form asp-action="ToggleAvailability" asp-route-id="@product.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="product-btn-toggle" onclick="return confirm('Mark this product as unavailable?')">
+                                            <i class="fas fa-pause"></i>
+                                            <span>Unavailable</span>
+                                        </button>
+                                    </form>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Out of Stock</span>
+                                    <form asp-action="ToggleAvailability" asp-route-id="@product.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="product-btn-toggle product-btn-available" onclick="return confirm('Mark this product as available?')">
+                                            <i class="fas fa-play"></i>
+                                            <span>Available</span>
+                                        </button>
+                                    </form>
                                 }
                             </div>
-                        </div>
-                        <div class="card-body d-flex flex-column p-2">
-                            <h6 class="card-title text-success mb-1" style="font-size: 0.9rem;">@product.Name</h6>
-                            <p class="card-text text-muted mb-2" style="font-size: 0.75rem; line-height: 1.2;">@(product.Description.Length > 50 ? product.Description.Substring(0, 50) + "..." : product.Description)</p>
-                            <div class="mt-auto">
-                                <div class="mb-2">
-                                    <small class="text-muted d-block">Price:</small>
-                                    <div class="fw-bold text-success" style="font-size: 0.9rem;">R @product.PricePerKg.ToString("N2")/kg</div>
-                                </div>
-                                <div class="mb-2">
-                                    <small class="text-muted d-block">Available:</small>
-                                    <div class="fw-bold" style="font-size: 0.8rem;">@product.AvailableQuantity kg</div>
-                                </div>
-                                <div class="mb-2">
-                                    <small class="text-muted d-block">Category:</small>
-                                    <div class="fw-bold" style="font-size: 0.8rem;">@product.Category.Name</div>
-                                </div>
-                                <div class="d-grid gap-1">
-                                    <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-edit me-1"></i>Edit
-                                    </a>
-                                    @if (product.IsAvailable)
-                                    {
-                                        <form asp-action="ToggleAvailability" asp-route-id="@product.Id" method="post">
-                                            <button type="submit" class="btn btn-warning btn-sm w-100">
-                                                <i class="fas fa-pause me-1"></i>Mark Unavailable
-                                            </button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <form asp-action="ToggleAvailability" asp-route-id="@product.Id" method="post">
-                                            <button type="submit" class="btn btn-success btn-sm w-100">
-                                                <i class="fas fa-play me-1"></i>Mark Available
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-muted p-2">
-                            <small style="font-size: 0.7rem;">
+                            <div class="product-date-farmer">
                                 <i class="fas fa-calendar me-1"></i>
-                                Added @product.CreatedAt.ToString("MMM dd")
-                            </small>
+                                <small>Added @product.CreatedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -91,54 +125,299 @@
     {
         <div class="row">
             <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-boxes fa-4x text-muted mb-4"></i>
-                        <h4 class="text-muted mb-3">No Products Yet</h4>
-                        <p class="text-muted mb-4">Start by adding your first product to begin selling on Reacoda Molemi.</p>
-                        <a asp-action="AddProduct" class="btn btn-success btn-lg">
-                            <i class="fas fa-plus me-2"></i>Add Your First Product
-                        </a>
-                    </div>
+                <div class="empty-state">
+                    <i class="fas fa-boxes empty-state-icon"></i>
+                    <h4 class="empty-state-title">No Products Yet</h4>
+                    <p class="empty-state-text">Start by adding your first product to begin selling on Reacoda Molemi.</p>
+                    <a asp-action="AddProduct" class="btn btn-success btn-lg">
+                        <i class="fas fa-plus me-2"></i>Add Your First Product
+                    </a>
                 </div>
             </div>
         </div>
     }
 </div>
 
-<!-- Toggle Availability Modal -->
-<div class="modal fade" id="toggleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to change the availability status of this product?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmToggle">Confirm</button>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    .products-grid-farmer {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        padding: 0;
+    }
 
-<script>
-    // Handle toggle availability
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleForms = document.querySelectorAll('form[asp-action="ToggleAvailability"]');
-        toggleForms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const modal = new bootstrap.Modal(document.getElementById('toggleModal'));
-                modal.show();
-                
-                document.getElementById('confirmToggle').onclick = function() {
-                    form.submit();
-                };
-            });
-        });
-    });
-</script>
+    .product-card-modern-farmer {
+        background: var(--accent-white);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+
+    .product-card-modern-farmer:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .product-image-wrapper-farmer {
+        position: relative;
+        width: 100%;
+        height: 240px;
+        overflow: hidden;
+        background: var(--accent-cream);
+    }
+
+    .product-image-modern-farmer {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .product-card-modern-farmer:hover .product-image-modern-farmer {
+        transform: scale(1.1);
+    }
+
+    .product-badge-farmer {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+    }
+
+    .product-status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: var(--border-radius-sm);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .badge-pending {
+        background: #F39C12;
+        color: white;
+    }
+
+    .badge-available {
+        background: linear-gradient(135deg, var(--primary-green), #17A085);
+        color: white;
+    }
+
+    .badge-rejected {
+        background: var(--primary-red);
+        color: white;
+    }
+
+    .badge-unavailable {
+        background: var(--text-muted);
+        color: white;
+    }
+
+    .product-category-badge-farmer {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        z-index: 2;
+    }
+
+    .product-category-badge-farmer span {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--text-dark);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: var(--border-radius-sm);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-info-farmer {
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        gap: 1rem;
+    }
+
+    .product-name-farmer {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .product-description-farmer {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin: 0;
+        flex: 1;
+    }
+
+    .product-meta-farmer {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem 0;
+        border-top: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .product-price-info-farmer {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .price-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .price-value-farmer {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-green);
+    }
+
+    .product-stock-info-farmer {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .product-stock-info-farmer i {
+        color: var(--primary-green);
+        font-size: 1rem;
+    }
+
+    .product-footer-farmer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+
+    .product-actions-farmer {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .product-btn-edit,
+    .product-btn-toggle {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius-sm);
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .product-btn-edit {
+        background: linear-gradient(135deg, #3498DB, #2980B9);
+        color: white;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+    }
+
+    .product-btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
+        color: white;
+    }
+
+    .product-btn-toggle {
+        background: #F39C12;
+        color: white;
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.25);
+    }
+
+    .product-btn-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(243, 156, 18, 0.35);
+        color: white;
+    }
+
+    .product-btn-available {
+        background: linear-gradient(135deg, var(--primary-green), #17A085);
+        box-shadow: 0 4px 12px rgba(31, 170, 89, 0.25);
+    }
+
+    .product-btn-available:hover {
+        box-shadow: 0 6px 20px rgba(31, 170, 89, 0.35);
+    }
+
+    .product-date-farmer {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    @@media (max-width: 1200px) {
+        .products-grid-farmer {
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.75rem;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .products-grid-farmer {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .product-image-wrapper-farmer {
+            height: 220px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .products-grid-farmer {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+        
+        .product-image-wrapper-farmer {
+            height: 200px;
+        }
+        
+        .product-info-farmer {
+            padding: 1.5rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .products-grid-farmer {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .product-image-wrapper-farmer {
+            height: 240px;
+        }
+    }
+</style>

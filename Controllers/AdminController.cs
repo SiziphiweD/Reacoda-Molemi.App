@@ -27,6 +27,13 @@ namespace ReacodeApp.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            var user = _sessionService.GetUser();
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == user!.Id)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
             var adminDashboard = new AdminDashboardViewModel
             {
                 TotalUsers = await _context.Users.CountAsync(u => u.IsActive),
@@ -48,7 +55,8 @@ namespace ReacodeApp.Controllers
                     .Where(u => u.IsActive)
                     .OrderByDescending(u => u.CreatedAt)
                     .Take(5)
-                    .ToListAsync()
+                    .ToListAsync(),
+                Notifications = notifications
             };
 
             return View(adminDashboard);
@@ -187,14 +195,33 @@ namespace ReacodeApp.Controllers
                 return Json(new { success = false, message = "Unauthorized" });
             }
 
-            var product = await _context.Products.FindAsync(productId);
+            var product = await _context.Products
+                .Include(p => p.Farmer)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+            
             if (product == null)
             {
                 return Json(new { success = false, message = "Product not found" });
             }
 
             product.Status = ProductStatus.Approved;
+            product.IsAvailable = true;
             product.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            // Create notification for farmer
+            var notification = new Notification
+            {
+                UserId = product.FarmerId,
+                Title = "Product Approved",
+                Message = $"Your product '{product.Name}' has been approved and is now available for sale.",
+                Type = NotificationType.Success,
+                IsRead = false,
+                RelatedEntityId = product.Id,
+                RelatedEntityType = "Product",
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Product approved successfully" });
@@ -208,14 +235,37 @@ namespace ReacodeApp.Controllers
                 return Json(new { success = false, message = "Unauthorized" });
             }
 
-            var product = await _context.Products.FindAsync(productId);
+            var product = await _context.Products
+                .Include(p => p.Farmer)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+            
             if (product == null)
             {
                 return Json(new { success = false, message = "Product not found" });
             }
 
             product.Status = ProductStatus.Rejected;
+            product.IsAvailable = false;
             product.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            // Create notification for farmer
+            var rejectionMessage = string.IsNullOrWhiteSpace(reason) 
+                ? $"Your product '{product.Name}' has been rejected."
+                : $"Your product '{product.Name}' has been rejected. Reason: {reason}";
+
+            var notification = new Notification
+            {
+                UserId = product.FarmerId,
+                Title = "Product Rejected",
+                Message = rejectionMessage,
+                Type = NotificationType.Error,
+                IsRead = false,
+                RelatedEntityId = product.Id,
+                RelatedEntityType = "Product",
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Product rejected successfully" });
@@ -431,7 +481,13 @@ namespace ReacodeApp.Controllers
                 return Json(new { success = false, message = "Unauthorized" });
             }
 
-            var user = await _context.Users.FindAsync(_sessionService.GetUser().Id);
+            var currentUser = _sessionService.GetUser();
+            if (currentUser == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var user = await _context.Users.FindAsync(currentUser.Id);
             if (user == null)
             {
                 return Json(new { success = false, message = "User not found" });

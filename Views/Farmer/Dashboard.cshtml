@@ -1,222 +1,280 @@
 @model FarmerDashboardViewModel
 @{
     ViewData["Title"] = "Farmer Dashboard";
+    
+    // Helper function to get relative time
+    string GetRelativeTime(DateTime dateTime)
+    {
+        var localTime = dateTime.ToLocalTime();
+        var localNow = DateTime.Now;
+        var timeSpan = localNow - localTime;
+        
+        if (timeSpan.TotalSeconds < 60)
+        {
+            return "just now";
+        }
+        else if (timeSpan.TotalMinutes < 60)
+        {
+            var minutes = (int)timeSpan.TotalMinutes;
+            return $"{minutes} minute{(minutes == 1 ? "" : "s")} ago";
+        }
+        else if (timeSpan.TotalHours < 24)
+        {
+            var hours = (int)timeSpan.TotalHours;
+            return $"{hours} hour{(hours == 1 ? "" : "s")} ago";
+        }
+        else if (timeSpan.TotalDays < 7)
+        {
+            var days = (int)timeSpan.TotalDays;
+            return $"{days} day{(days == 1 ? "" : "s")} ago";
+        }
+        else
+        {
+            return localTime.ToString("MMM dd, HH:mm");
+        }
+    }
 }
 
 <div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold text-primary-green">
-                    <i class="fas fa-seedling me-2"></i>Farmer Dashboard
-                </h2>
-                <div class="text-muted">
-                    Welcome back, @Model.Farmer.FirstName!
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="service-section-header">
+                <div class="service-section-icon">
+                    <i class="fas fa-seedling"></i>
                 </div>
+                <h2 class="service-section-title">Farmer Dashboard</h2>
+                <p class="service-section-subtitle">Welcome back, @Model.Farmer.FirstName! Manage your products and orders.</p>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="dashboard-card">
-                <div class="dashboard-stat">@Model.TotalProducts</div>
-                <div class="dashboard-label">Total Products</div>
+    <div class="services-cards-container mb-5">
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-box"></i>
             </div>
+            <h5 class="service-card-title">Total Products</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2rem; font-weight: 700; color: var(--primary-green); display: block; margin: 0.5rem 0;">@Model.TotalProducts</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">products listed</span>
+            </p>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="dashboard-card">
-                <div class="dashboard-stat">@Model.ActiveProducts</div>
-                <div class="dashboard-label">Active Products</div>
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-check-circle"></i>
             </div>
+            <h5 class="service-card-title">Active Products</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2rem; font-weight: 700; color: var(--primary-green); display: block; margin: 0.5rem 0;">@Model.ActiveProducts</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">currently available</span>
+            </p>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="dashboard-card info">
-                <div class="dashboard-stat info">@Model.TotalOrders</div>
-                <div class="dashboard-label">Total Orders</div>
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-shopping-bag"></i>
             </div>
+            <h5 class="service-card-title">Total Orders</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2rem; font-weight: 700; color: #3498DB; display: block; margin: 0.5rem 0;">@Model.TotalOrders</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">orders received</span>
+            </p>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="dashboard-card warning">
-                <div class="dashboard-stat warning">@Model.PendingOrders</div>
-                <div class="dashboard-label">Pending Orders</div>
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-clock"></i>
             </div>
+            <h5 class="service-card-title">Pending Orders</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2rem; font-weight: 700; color: #F39C12; display: block; margin: 0.5rem 0;">@Model.PendingOrders</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">awaiting response</span>
+            </p>
         </div>
     </div>
 
     <!-- Earnings Card -->
-    <div class="row mb-4">
+    <div class="row mb-5">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-dollar-sign me-2"></i>Total Earnings
-                    </h6>
-                    <a asp-action="Earnings" class="btn btn-success btn-sm">
-                        <i class="fas fa-chart-line me-1"></i>View Details
-                    </a>
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%;">
+                <div class="service-card-icon" style="width: 80px; height: 80px;">
+                    <i class="fas fa-dollar-sign" style="font-size: 2rem;"></i>
                 </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        <h2 class="text-success fw-bold">R @Model.TotalEarnings.ToString("N2")</h2>
-                        <p class="text-muted mb-0">Total earnings from delivered orders</p>
-                    </div>
+                <h5 class="service-card-title">Total Earnings</h5>
+                <p class="service-card-text">
+                    <span style="font-size: 3rem; font-weight: 700; color: var(--primary-green); display: block; margin: 1rem 0;">R @Model.TotalEarnings.ToString("N2")</span>
+                    <span style="font-size: 1rem; color: var(--text-muted);">Total earnings from delivered orders</span>
+                </p>
+                <div style="margin-top: 1.5rem;">
+                    <a asp-action="Earnings" class="btn btn-success">
+                        <i class="fas fa-chart-line me-2"></i>View Detailed Earnings
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Recent Orders & Notifications -->
     <div class="row">
         <!-- Recent Orders -->
         <div class="col-lg-8 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%; text-align: left;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="service-card-title" style="margin: 0;">
                         <i class="fas fa-shopping-cart me-2"></i>Recent Orders
-                    </h6>
+                    </h5>
                     <a asp-action="OrdersReceived" class="btn btn-primary btn-sm">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
-                <div class="card-body">
-                    @if (Model.RecentOrders.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Buyer</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var order in Model.RecentOrders)
-                                    {
-                                        <tr>
-                                            <td>#@order.Id</td>
-                                            <td>@order.Buyer.FirstName @order.Buyer.LastName</td>
-                                            <td>R @order.TotalAmount.ToString("N2")</td>
-                                            <td>
-                                                <span class="badge bg-@(order.Status switch {
-                                                    OrderStatus.Pending => "warning",
-                                                    OrderStatus.Accepted => "info",
-                                                    OrderStatus.Shipped => "primary",
-                                                    OrderStatus.Delivered => "success",
-                                                    OrderStatus.Cancelled => "danger",
-                                                    _ => "secondary"
-                                                })">
-                                                    @order.Status
-                                                </span>
-                                            </td>
-                                            <td>@order.CreatedAt.ToString("MMM dd, yyyy")</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No orders yet</p>
-                        </div>
-                    }
-                </div>
+                @if (Model.RecentOrders.Any())
+                {
+                    <div class="orders-list-modern">
+                        @foreach (var order in Model.RecentOrders)
+                        {
+                            <div class="order-item-modern">
+                                <div class="order-item-header">
+                                    <div class="order-number-modern">
+                                        <i class="fas fa-hashtag me-1"></i>#@order.OrderNumber
+                                    </div>
+                                    <span class="badge-modern badge-@(order.Status switch {
+                                        OrderStatus.Pending => "warning",
+                                        OrderStatus.Accepted => "info",
+                                        OrderStatus.Shipped => "primary",
+                                        OrderStatus.Arrived => "info",
+                                        OrderStatus.Delivered => "success",
+                                        OrderStatus.Rejected => "danger",
+                                        OrderStatus.Cancelled => "secondary",
+                                        _ => "secondary"
+                                    })">@order.Status</span>
+                                </div>
+                                <div class="order-item-body">
+                                    <div class="order-buyer-info">
+                                        <i class="fas fa-user me-2"></i>
+                                        <span>@(order.Buyer?.FirstName ?? "Unknown") @(order.Buyer?.LastName ?? "")</span>
+                                    </div>
+                                    <div class="order-amount-info">
+                                        <strong>R @order.TotalAmount.ToString("N2")</strong>
+                                    </div>
+                                </div>
+                                <div class="order-item-footer">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>@order.CreatedAt.ToString("MMM dd, yyyy")
+                                    </small>
+                                    <a asp-action="OrderDetails" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No orders yet</p>
+                        <p class="text-muted small">Orders will appear here once buyers start purchasing your products.</p>
+                    </div>
+                }
             </div>
         </div>
 
         <!-- Notifications -->
         <div class="col-lg-4 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%; text-align: left;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="service-card-title" style="margin: 0;">
                         <i class="fas fa-bell me-2"></i>Notifications
-                    </h6>
+                    </h5>
                     <a asp-controller="Home" asp-action="Notifications" class="btn btn-info btn-sm">
                         <i class="fas fa-eye me-1"></i>View All
                     </a>
                 </div>
-                <div class="card-body">
-                    @if (Model.Notifications.Any())
-                    {
+                @if (Model.Notifications.Any())
+                {
+                    <div class="notifications-list-modern">
                         @foreach (var notification in Model.Notifications)
                         {
-                            <div class="d-flex align-items-start mb-3">
-                                <div class="flex-shrink-0">
+                            <div class="notification-item-modern @(notification.IsRead ? "" : "unread")">
+                                <div class="notification-icon-modern">
                                     <i class="fas fa-@(notification.Type switch {
                                         NotificationType.Order => "shopping-cart",
                                         NotificationType.Product => "box",
                                         NotificationType.System => "cog",
                                         NotificationType.Payment => "credit-card",
                                         _ => "info-circle"
-                                    }) text-@(notification.Type switch {
-                                        NotificationType.Order => "primary",
-                                        NotificationType.Product => "success",
-                                        NotificationType.System => "warning",
-                                        NotificationType.Payment => "info",
-                                        _ => "secondary"
                                     })"></i>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-1">@notification.Title</h6>
-                                    <p class="mb-1 text-muted small">@notification.Message</p>
-                                    <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, HH:mm")</small>
+                                <div class="notification-content-modern">
+                                    <h6 class="notification-title-modern @(notification.IsRead ? "" : "fw-bold")">@notification.Title</h6>
+                                    <p class="notification-text-modern">@notification.Message</p>
+                                    <small class="notification-time-modern" data-timestamp="@notification.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ")">
+                                        <span class="relative-time">@GetRelativeTime(notification.CreatedAt)</span>
+                                    </small>
+                                    @if (notification.Type == NotificationType.Order && notification.RelatedEntityId.HasValue)
+                                    {
+                                        <div class="mt-2">
+                                            <a asp-action="OrdersReceived" asp-route-orderId="@notification.RelatedEntityId" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>View Order
+                                            </a>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No notifications</p>
-                        </div>
-                    }
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No notifications</p>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-bolt me-2"></i>Quick Actions
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="AddProduct" class="btn btn-success w-100">
-                                <i class="fas fa-plus me-2"></i>Add Product
-                            </a>
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%;">
+                <h5 class="service-card-title">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+                <div class="services-cards-container" style="margin-top: 2rem;">
+                    <a asp-action="AddProduct" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-plus"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="MyProducts" class="btn btn-primary w-100">
-                                <i class="fas fa-boxes me-2"></i>My Products
-                            </a>
+                        <h5 class="service-card-title">Add Product</h5>
+                        <p class="service-card-text">List a new product to start selling</p>
+                    </a>
+                    <a asp-action="MyProducts" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-boxes"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="OrdersReceived" class="btn btn-warning w-100">
-                                <i class="fas fa-shopping-cart me-2"></i>Orders
-                            </a>
+                        <h5 class="service-card-title">My Products</h5>
+                        <p class="service-card-text">Manage your product listings</p>
+                    </a>
+                    <a asp-action="OrdersReceived" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="Earnings" class="btn btn-info w-100">
-                                <i class="fas fa-dollar-sign me-2"></i>Earnings
-                            </a>
+                        <h5 class="service-card-title">Orders</h5>
+                        <p class="service-card-text">View and manage orders</p>
+                    </a>
+                    <a asp-action="Earnings" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-dollar-sign"></i>
                         </div>
-                    </div>
+                        <h5 class="service-card-title">Earnings</h5>
+                        <p class="service-card-text">Track your earnings and payouts</p>
+                    </a>
                 </div>
             </div>
         </div>
@@ -224,25 +282,195 @@
 </div>
 
 <style>
-    .border-left-primary {
-        border-left: 0.25rem solid #4e73df !important;
+    .orders-list-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
-    .border-left-success {
-        border-left: 0.25rem solid #1cc88a !important;
+
+    .order-item-modern {
+        background: var(--accent-cream);
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
     }
-    .border-left-info {
-        border-left: 0.25rem solid #36b9cc !important;
+
+    .order-item-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-green);
     }
-    .border-left-warning {
-        border-left: 0.25rem solid #f6c23e !important;
+
+    .order-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
     }
-    .text-xs {
-        font-size: 0.7rem;
+
+    .order-number-modern {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 1rem;
     }
-    .text-gray-300 {
-        color: #dddfeb !important;
+
+    .badge-modern {
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .text-gray-800 {
-        color: #5a5c69 !important;
+
+    .badge-warning { background: #F39C12; color: white; }
+    .badge-info { background: #3498DB; color: white; }
+    .badge-primary { background: #3498DB; color: white; }
+    .badge-success { background: var(--primary-green); color: white; }
+    .badge-danger { background: var(--primary-red); color: white; }
+    .badge-secondary { background: var(--text-muted); color: white; }
+
+    .order-item-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .order-buyer-info {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .order-amount-info {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-green);
+    }
+
+    .order-item-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .notifications-list-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .notification-item-modern {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--accent-cream);
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
+    }
+
+    .notification-item-modern.unread {
+        background: var(--accent-white);
+        border-left: 4px solid var(--primary-green);
+    }
+
+    .notification-item-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .notification-icon-modern {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgba(31, 170, 89, 0.1), rgba(23, 160, 133, 0.1));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notification-icon-modern i {
+        color: var(--primary-green);
+        font-size: 1.1rem;
+    }
+
+    .notification-content-modern {
+        flex: 1;
+    }
+
+    .notification-title-modern {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+        color: var(--text-dark);
+    }
+
+    .notification-text-modern {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .notification-time-modern {
+        color: var(--text-muted);
+        font-size: 0.75rem;
     }
 </style>
+
+@section Scripts {
+    <script>
+        // Update relative time for all timestamps
+        function updateRelativeTimes() {
+            const timestamps = document.querySelectorAll('[data-timestamp]');
+            const now = new Date();
+            
+            timestamps.forEach(element => {
+                const timestampStr = element.getAttribute('data-timestamp');
+                if (!timestampStr) return;
+                
+                const timestamp = new Date(timestampStr);
+                const timeSpan = now - timestamp;
+                const relativeTimeSpan = element.querySelector('.relative-time');
+                
+                if (!relativeTimeSpan) return;
+                
+                let relativeTime = '';
+                
+                if (timeSpan < 60000) { // Less than 1 minute
+                    relativeTime = 'just now';
+                } else if (timeSpan < 3600000) { // Less than 1 hour
+                    const minutes = Math.floor(timeSpan / 60000);
+                    relativeTime = `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+                } else if (timeSpan < 86400000) { // Less than 24 hours
+                    const hours = Math.floor(timeSpan / 3600000);
+                    relativeTime = `${hours} hour${hours === 1 ? '' : 's'} ago`;
+                } else if (timeSpan < 604800000) { // Less than 7 days
+                    const days = Math.floor(timeSpan / 86400000);
+                    relativeTime = `${days} day${days === 1 ? '' : 's'} ago`;
+                } else {
+                    // Show absolute time for older notifications
+                    relativeTime = timestamp.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                relativeTimeSpan.textContent = relativeTime;
+            });
+        }
+        
+        // Update timestamps every 30 seconds
+        setInterval(updateRelativeTimes, 30000);
+        
+        // Initial update
+        updateRelativeTimes();
+    </script>
+}

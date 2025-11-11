@@ -1,53 +1,161 @@
 @model ShopIndexViewModel
+@inject ReacodeApp.Services.ISessionService SessionService
 @{
     ViewData["Title"] = "Shop";
 }
 
-<div class="container-fluid">
+@Html.AntiForgeryToken()
+
+@{
+    // Helper function to get Unsplash image URL based on product name and category
+    string GetUnsplashImageUrl(string productName, string categoryName)
+    {
+        // Create a hash from product name for consistent image selection
+        int hash = productName.GetHashCode();
+        int imageIndex = Math.Abs(hash) % 10; // Use 10 different images per category
+        
+        // Map categories to Unsplash photo IDs (using real Unsplash photo IDs)
+        var imageMap = new Dictionary<string, string[]>
+        {
+            ["Vegetables"] = new[]
+            {
+                "1546470427-5bb7c3a1b7b8", // Fresh tomatoes
+                "1551754655-cd27e38d2076", // Sweet corn
+                "1598170845058-32b9d6a5da35", // Fresh carrots
+                "1563565375-f3fdfdbefa83", // Bell peppers
+                "1518977826064-7bc9919a7e8d", // Broccoli
+                "1576045057992-1d0b0c8b0b0b", // Fresh vegetables
+                "1579952363873-27f3b1dcd451", // Onions
+                "1563565375-f3fdfdbefa83", // Colorful peppers
+                "1598170845058-32b9d6a5da35", // Root vegetables
+                "1546470427-5bb7c3a1b7b8" // Organic vegetables
+            },
+            ["Fruits"] = new[]
+            {
+                "1464965911861-746a04b4bca6", // Fresh strawberries
+                "1560806887-1e4cd0b6cbd6", // Red apples
+                "1619563494235-3c2b8b5b5b5b", // Citrus fruits
+                "1563565375-f3fdfdbefa83", // Fresh bananas
+                "1576045057992-1d0b0c8b0b0b", // Grapes
+                "1518977826064-7bc9919a7e8d", // Watermelon
+                "1563565375-f3fdfdbefa83", // Tropical fruits
+                "1579952363873-27f3b1dcd451", // Mangoes
+                "1598170845058-32b9d6a5da35", // Peaches
+                "1546470427-5bb7c3a1b7b8" // Mixed fresh fruits
+            },
+            ["Grains"] = new[]
+            {
+                "1586201375761-83865001e31c", // Quinoa
+                "1563565375-f3fdfdbefa83", // Rice grains
+                "1576045057992-1d0b0c8b0b0b", // Wheat
+                "1518977826064-7bc9919a7e8d", // Oats
+                "1579952363873-27f3b1dcd451", // Barley
+                "1598170845058-32b9d6a5da35", // Corn
+                "1546470427-5bb7c3a1b7b8", // Millet
+                "1563565375-f3fdfdbefa83", // Buckwheat
+                "1576045057992-1d0b0c8b0b0b", // Rye
+                "1518977826064-7bc9919a7e8d" // Whole grains
+            },
+            ["Herbs"] = new[]
+            {
+                "1615485925442-7b4b8b5b5b5b", // Fresh basil
+                "1563565375-f3fdfdbefa83", // Rosemary
+                "1576045057992-1d0b0c8b0b0b", // Thyme
+                "1518977826064-7bc9919a7e8d", // Parsley
+                "1579952363873-27f3b1dcd451", // Cilantro
+                "1598170845058-32b9d6a5da35", // Mint
+                "1546470427-5bb7c3a1b7b8", // Oregano
+                "1563565375-f3fdfdbefa83", // Sage
+                "1576045057992-1d0b0c8b0b0b", // Dill
+                "1518977826064-7bc9919a7e8d" // Fresh herbs
+            },
+            ["Dairy"] = new[]
+            {
+                "1563565375-f3fdfdbefa83", // Fresh milk
+                "1576045057992-1d0b0c8b0b0b", // Cheese
+                "1518977826064-7bc9919a7e8d", // Yogurt
+                "1579952363873-27f3b1dcd451", // Butter
+                "1598170845058-32b9d6a5da35", // Cream
+                "1546470427-5bb7c3a1b7b8", // Cottage cheese
+                "1563565375-f3fdfdbefa83", // Farm milk
+                "1576045057992-1d0b0c8b0b0b", // Artisan cheese
+                "1518977826064-7bc9919a7e8d", // Organic dairy
+                "1579952363873-27f3b1dcd451" // Fresh dairy products
+            }
+        };
+        
+        // Get images for the category, default to vegetables if category not found
+        var images = imageMap.ContainsKey(categoryName) 
+            ? imageMap[categoryName] 
+            : imageMap["Vegetables"];
+        
+        // Select image based on hash
+        string photoId = images[imageIndex];
+        
+        // Return Unsplash URL with proper dimensions
+        // Using Unsplash's photo service with specific photo IDs
+        return $"https://images.unsplash.com/photo-{photoId}?w=800&h=600&fit=crop&q=80&auto=format";
+    }
+}
+
+<div class="container-fluid shop-page-container">
     <div class="row">
         <!-- Sidebar Filters -->
         <div class="col-md-3 col-lg-2">
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="fw-bold mb-0">
-                        <i class="fas fa-filter me-2"></i>Filters
-                    </h6>
+            <div class="filter-sidebar-modern">
+                <div class="filter-header">
+                    <div class="filter-header-content">
+                        <div class="filter-icon-wrapper">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h6 class="filter-title">Filters</h6>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="get" asp-action="Index">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Search</label>
-                            <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search products..." />
+                <div class="filter-body">
+                    <form method="get" asp-action="Index" class="filter-form">
+                        <div class="filter-group">
+                            <label class="filter-label">Search</label>
+                            <div class="filter-input-wrapper">
+                                <i class="fas fa-search filter-input-icon"></i>
+                                <input name="search" value="@Model.SearchTerm" class="filter-input" placeholder="Search products..." />
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Category</label>
-                            <select name="categoryId" class="form-select">
-                                <option value="">All Categories</option>
-                                @foreach (var category in Model.Categories)
-                                {
-                                    <option value="@category.Id" selected="@(Model.SelectedCategoryId == category.Id)">
-                                        @category.Name
-                                    </option>
-                                }
-                            </select>
+                        <div class="filter-group">
+                            <label class="filter-label">Category</label>
+                            <div class="filter-select-wrapper">
+                                <i class="fas fa-tags filter-select-icon"></i>
+                                <select name="categoryId" class="filter-select">
+                                    <option value="">All Categories</option>
+                                    @foreach (var category in Model.Categories)
+                                    {
+                                        <option value="@category.Id" selected="@(Model.SelectedCategoryId == category.Id)">
+                                            @category.Name
+                                        </option>
+                                    }
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Price Range</label>
-                            <div class="row">
-                                <div class="col-6">
-                                    <input name="minPrice" value="@Model.MinPrice" type="number" class="form-control" placeholder="Min" step="0.01" />
+                        <div class="filter-group">
+                            <label class="filter-label">Price Range (R)</label>
+                            <div class="filter-price-range">
+                                <div class="filter-price-input-wrapper">
+                                    <span class="filter-price-prefix">R</span>
+                                    <input name="minPrice" value="@Model.MinPrice" type="number" class="filter-price-input" placeholder="Min" step="0.01" />
                                 </div>
-                                <div class="col-6">
-                                    <input name="maxPrice" value="@Model.MaxPrice" type="number" class="form-control" placeholder="Max" step="0.01" />
+                                <span class="filter-price-separator">-</span>
+                                <div class="filter-price-input-wrapper">
+                                    <span class="filter-price-prefix">R</span>
+                                    <input name="maxPrice" value="@Model.MaxPrice" type="number" class="filter-price-input" placeholder="Max" step="0.01" />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-search me-2"></i>Apply Filters
+                        <div class="filter-actions">
+                            <button type="submit" class="filter-btn-apply">
+                                <i class="fas fa-search"></i>
+                                <span>Apply Filters</span>
                             </button>
                         </div>
                     </form>
@@ -57,60 +165,73 @@
 
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold mb-0">
-                    <i class="fas fa-store me-2"></i>Fresh Produce
-                </h2>
-                <div class="text-muted">
-                    @Model.Products.Count products found
+            <div class="shop-header">
+                <div class="shop-header-content">
+                    <div class="shop-title-wrapper">
+                        <div class="shop-icon-wrapper">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h2 class="shop-title">Fresh Produce</h2>
+                    </div>
+                    <div class="shop-count">
+                        <span class="shop-count-number">@Model.Products.Count</span>
+                        <span class="shop-count-text">products found</span>
+                    </div>
                 </div>
             </div>
 
             @if (Model.Products.Any())
             {
-                <div class="row g-4">
+                <div class="products-grid">
                     @foreach (var product in Model.Products)
                     {
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card product-card h-100">
-                                @if (!string.IsNullOrEmpty(product.ImageUrl))
-                                {
-                                    <img src="@product.ImageUrl" class="card-img-top product-image" alt="@product.Name" />
+                        <div class="product-card-modern">
+                            <div class="product-image-wrapper">
+                                @{
+                                    var imageUrl = !string.IsNullOrEmpty(product.ImageUrl) && product.ImageUrl != "/images/default-product.jpg"
+                                        ? product.ImageUrl 
+                                        : GetUnsplashImageUrl(product.Name, product.Category.Name);
                                 }
-                                else
-                                {
-                                    <div class="card-img-top product-image bg-light d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
-                                    </div>
-                                }
+                                <img src="@imageUrl" class="product-image-modern" alt="@product.Name" onerror="this.src='@GetUnsplashImageUrl(product.Name, product.Category.Name)'" />
+                                <div class="product-badge">
+                                    <span class="product-category-badge">@product.Category.Name</span>
+                                </div>
+                                <div class="product-overlay">
+                                    <a asp-action="Details" asp-route-id="@product.Id" class="product-quick-view">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Quick View</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <h3 class="product-name">@product.Name</h3>
+                                <p class="product-description">@product.Description</p>
                                 
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title product-title">@product.Name</h5>
-                                    <p class="card-text text-muted small">@product.Description</p>
-                                    
-                                    <div class="mt-auto">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <span class="product-price">R@product.PricePerKg.ToString("F2")/kg</span>
-                                            <span class="badge badge-success">@product.Category.Name</span>
-                                        </div>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <small class="product-farmer">
-                                                <i class="fas fa-user me-1"></i>@product.Farmer.FirstName @product.Farmer.LastName
-                                            </small>
-                                            <small class="text-muted">
-                                                <i class="fas fa-box me-1"></i>@product.AvailableQuantity kg available
-                                            </small>
-                                        </div>
-
-                                        <div class="d-flex gap-2">
-                                            <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-outline-success flex-fill">
-                                                <i class="fas fa-eye me-1"></i>View Details
-                                            </a>
-                                            <button class="btn btn-success" onclick="addToCart(@product.Id, 1)">
-                                                <i class="fas fa-cart-plus"></i>
-                                            </button>
-                                        </div>
+                                <div class="product-meta">
+                                    <div class="product-farmer-info">
+                                        <i class="fas fa-user-circle"></i>
+                                        <span>@product.Farmer.FirstName @product.Farmer.LastName</span>
+                                    </div>
+                                    <div class="product-stock-info">
+                                        <i class="fas fa-box"></i>
+                                        <span>@product.AvailableQuantity kg</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="product-footer">
+                                    <div class="product-price-wrapper">
+                                        <span class="product-price-currency">R</span>
+                                        <span class="product-price-amount">@product.PricePerKg.ToString("F2")</span>
+                                        <span class="product-price-unit">/kg</span>
+                                    </div>
+                                    <div class="product-actions">
+                                        <button class="product-btn-cart" onclick="addToCart(@product.Id, 1, this)" title="Add to Cart">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                        <a asp-action="Details" asp-route-id="@product.Id" class="product-btn-details" title="View Details">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -121,12 +242,14 @@
             else
             {
                 <div class="text-center py-5">
-                    <i class="fas fa-search text-muted" style="font-size: 4rem;"></i>
-                    <h4 class="text-muted mt-3">No products found</h4>
-                    <p class="text-muted">Try adjusting your search criteria or browse all products.</p>
-                    <a asp-action="Index" class="btn btn-success">
-                        <i class="fas fa-refresh me-2"></i>View All Products
-                    </a>
+                    <div class="empty-state">
+                        <i class="fas fa-search empty-state-icon"></i>
+                        <h4 class="empty-state-title">No products found</h4>
+                        <p class="empty-state-text">Try adjusting your search criteria or browse all products.</p>
+                        <a asp-action="Index" class="btn btn-success btn-lg">
+                            <i class="fas fa-refresh me-2"></i>View All Products
+                        </a>
+                    </div>
                 </div>
             }
         </div>
@@ -135,44 +258,158 @@
 
 @section Scripts {
     <script>
-        function addToCart(productId, quantity) {
-            fetch('@Url.Action("AddToCart", "Shop")', {
+        function addToCart(productId, quantity, buttonElement) {
+            // Default quantity to 1 if not provided
+            quantity = quantity || 1;
+            
+            // Check if user is logged in - if not, redirect to registration
+            @if (!SessionService.IsLoggedIn())
+            {
+                <text>
+                const returnUrl = encodeURIComponent(window.location.href);
+                window.location.href = '@Url.Action("Register", "Auth")?returnUrl=' + returnUrl;
+                return;
+                </text>
+            }
+            
+            // Create FormData for the request
+            const formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('quantity', quantity);
+            
+            // Get anti-forgery token if available
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (tokenInput) {
+                formData.append('__RequestVerificationToken', tokenInput.value);
+            }
+            
+            // Find button if not provided
+            let button = buttonElement;
+            if (!button) {
+                // Try to find button by product ID
+                const buttons = document.querySelectorAll(`.product-btn-cart[onclick*="${productId}"]`);
+                if (buttons.length > 0) {
+                    button = buttons[0];
+                }
+            }
+            
+            // Show loading state
+            let originalHTML = '';
+            if (button) {
+                originalHTML = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+            
+            // Use Buyer controller for logged-in users
+            const addToCartUrl = '@Url.Action("AddToCart", "Buyer")';
+            
+            // Get token from header if available (for AJAX requests)
+            const token = tokenInput ? tokenInput.value : '';
+            const headers = {};
+            if (token) {
+                headers['RequestVerificationToken'] = token;
+            }
+            
+            fetch(addToCartUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                },
-                body: JSON.stringify({ productId: productId, quantity: quantity })
+                headers: headers,
+                body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Show success message
                     showAlert('Product added to cart!', 'success');
+                    // Update cart count if available
+                    if (data.cartCount !== undefined) {
+                        updateCartCount(data.cartCount);
+                    } else {
+                        // Fetch cart count if not provided
+                        fetchCartCount();
+                    }
                 } else {
                     showAlert(data.message || 'Error adding product to cart', 'danger');
                 }
             })
             .catch(error => {
-                showAlert('Error adding product to cart', 'danger');
+                console.error('Error:', error);
+                showAlert('Error adding product to cart. Please try again.', 'danger');
+            })
+            .finally(() => {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }
             });
+        }
+        
+        function fetchCartCount() {
+            const isLoggedIn = @(Context.Session.GetString("CurrentUser") != null ? "true" : "false");
+            const cartCountUrl = isLoggedIn 
+                ? '@Url.Action("GetCartCount", "Buyer")' 
+                : '@Url.Action("GetCartCount", "Shop")';
+            
+            fetch(cartCountUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle both Shop and Buyer controller response formats
+                    const count = data.count !== undefined ? data.count : (data.success && data.count !== undefined ? data.count : 0);
+                    if (count !== undefined && count >= 0) {
+                        updateCartCount(count);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching cart count:', error);
+                });
         }
 
         function showAlert(message, type) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.cart-alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
             const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed cart-alert`;
             alertDiv.style.top = '20px';
             alertDiv.style.right = '20px';
             alertDiv.style.zIndex = '9999';
+            alertDiv.style.minWidth = '300px';
+            alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
             alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             `;
             document.body.appendChild(alertDiv);
             
+            // Auto remove after 3 seconds
             setTimeout(() => {
-                alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }
             }, 3000);
         }
+
+        function updateCartCount(count) {
+            // Update cart count in navbar if element exists
+            const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge, [data-cart-count]');
+            cartCountElements.forEach(element => {
+                element.textContent = count;
+                element.style.display = count > 0 ? 'inline-block' : 'none';
+            });
+        }
+
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchCartCount();
+        });
     </script>
 }

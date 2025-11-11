@@ -3,6 +3,8 @@
     ViewData["Title"] = "Product Verification";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
@@ -27,7 +29,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4">
-                                    <img src="@product.ImageUrl" class="img-fluid rounded" alt="@product.Name" style="height: 150px; object-fit: cover;">
+                                    <img src="@product.ImageUrl" class="img-fluid rounded" alt="@product.Name" style="height: 200px; width: 100%; object-fit: cover;" onerror="this.src='/images/default-product.jpg'">
                                 </div>
                                 <div class="col-md-8">
                                     <h5 class="card-title text-success">@product.Name</h5>
@@ -193,24 +195,31 @@
     let currentProductId = null;
 
     function approveProduct(productId) {
-        if (confirm('Are you sure you want to approve this product?')) {
+        if (confirm('Are you sure you want to approve this product? It will become available for buyers on the shop page.')) {
+            const formData = new FormData();
+            formData.append('productId', productId);
+            
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            
             fetch('@Url.Action("ApproveProduct", "Admin")', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': token
                 },
-                body: JSON.stringify({ productId: productId })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-                showToast(data.message, data.success ? 'success' : 'error');
                 if (data.success) {
-                    setTimeout(() => location.reload(), 1500);
+                    showToast('Product approved successfully! It is now available on the shop page.', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showToast(data.message || 'Error approving product', 'error');
                 }
             })
             .catch(error => {
-                showToast('Error approving product', 'error');
+                showToast('Error approving product. Please try again.', 'error');
+                console.error('Error:', error);
             });
         }
     }
@@ -244,16 +253,18 @@
             return;
         }
 
+        const formData = new FormData();
+        formData.append('productId', currentProductId);
+        formData.append('reason', reason);
+        
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        
         fetch('@Url.Action("RejectProduct", "Admin")', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                'RequestVerificationToken': token
             },
-            body: JSON.stringify({ 
-                productId: currentProductId, 
-                reason: reason 
-            })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {
@@ -289,4 +300,9 @@
         bsToast.show();
     }
 </script>
+
+
+
+
+
 

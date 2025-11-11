@@ -3,82 +3,75 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-custom border-0">
-                <div class="card-header text-center py-4">
-                    <h3 class="fw-bold mb-0">
-                        <i class="fas fa-sign-in-alt me-2"></i>Welcome Back
-                    </h3>
-                    <p class="text-white-50 mb-0">Sign in to your account</p>
-                </div>
-                <div class="card-body p-5">
-                    <form asp-action="Login" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                        
-                        <div class="mb-4">
-                            <label asp-for="Email" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+<section class="login-section">
+    <div class="container">
+        <div class="row justify-content-center py-5">
+            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <div class="login-icon">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <h1 class="login-title">Welcome Back</h1>
+                        <p class="login-subtitle">Sign in to your account to continue</p>
+                    </div>
+                    <div class="login-card-body">
+                        <form action="@Url.Action("Login", "Auth")" method="post" class="login-form">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="login-error-alert" role="alert"></div>
+                            
+                            <div class="form-group-login">
+                                <label asp-for="Email" class="form-label-login">
                                     <i class="fas fa-envelope"></i>
-                                </span>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                                    Email Address
+                                </label>
+                                <input asp-for="Email" class="form-input-login" placeholder="Enter your email address" />
+                                <span asp-validation-for="Email" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Password" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
+                            <div class="form-group-login">
+                                <label asp-for="Password" class="form-label-login">
                                     <i class="fas fa-lock"></i>
-                                </span>
-                                <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                                    Password
+                                </label>
+                                <input asp-for="Password" class="form-input-login" placeholder="Enter your password" />
+                                <span asp-validation-for="Password" class="form-error"></span>
                             </div>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-4 form-check d-flex justify-content-between">
-                            <div>
-                                <input asp-for="RememberMe" class="form-check-input" />
-                                <label asp-for="RememberMe" class="form-check-label"></label>
-                            </div>
-                            <a asp-action="ForgotPassword" class="text-success text-decoration-none">
-                                Forgot Password?
-                            </a>
-                        </div>
-
-                        <input asp-for="ReturnUrl" type="hidden" />
-
-                        <div class="d-grid mb-4">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                            </button>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="mb-0">Don't have an account? 
-                                <a asp-action="Register" class="text-success fw-bold text-decoration-none">
-                                    Sign up here
+                            <div class="login-options">
+                                <div class="remember-me">
+                                    <input asp-for="RememberMe" class="remember-checkbox" id="rememberMe" />
+                                    <label for="rememberMe" class="remember-label">Remember me</label>
+                                </div>
+                                <a asp-action="ForgotPassword" class="forgot-password-link">
+                                    Forgot Password?
                                 </a>
-                            </p>
-                            <hr class="my-3">
-                            <div class="alert alert-info">
-                                <small>
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    <strong>Admin Access:</strong><br>
-                                    Admin: <code>admin@reacoda.com</code> / <code>admin123</code><br>
-                                    Super Admin: <code>superadmin@reacoda.com</code> / <code>superadmin123</code>
-                                </small>
                             </div>
-                        </div>
-                    </form>
+
+                            <input asp-for="ReturnUrl" type="hidden" />
+
+                            <div class="login-actions">
+                                <button type="submit" class="btn-login-submit">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    <span>Sign In</span>
+                                </button>
+                            </div>
+
+                            <div class="login-footer">
+                                <p class="login-signup-text">
+                                    Don't have an account? 
+                                    <a asp-action="Register" class="login-signup-link">
+                                        Sign up here
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -59,7 +59,9 @@ namespace ReacodeApp.Models
         
         public DateTime? HarvestDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
-        public string? ImageUrl { get; set; }
+        
+        [System.ComponentModel.DataAnnotations.Display(Name = "Product Image")]
+        public IFormFile? ImageFile { get; set; }
         
         public List<Category> Categories { get; set; } = new();
     }
@@ -115,6 +117,7 @@ namespace ReacodeApp.Models
         public List<Order> RecentOrders { get; set; } = new();
         public List<Product> FavoriteProducts { get; set; } = new();
         public List<Product> SuggestedProducts { get; set; } = new();
+        public List<Notification> Notifications { get; set; } = new();
     }
 
     public class ProductDetailsViewModel
@@ -140,12 +143,31 @@ namespace ReacodeApp.Models
         public string DeliveryProvince { get; set; } = string.Empty;
         
         [Required]
+        [RegularExpression(@"^\d{4}$", ErrorMessage = "Postal code must be exactly 4 digits")]
         public string DeliveryPostalCode { get; set; } = string.Empty;
         
         public string? DeliveryNotes { get; set; }
         
         [Required]
         public PaymentMethod PaymentMethod { get; set; }
+        
+        // Credit Card Details
+        public string? CardNumber { get; set; }
+        public string? CardHolderName { get; set; }
+        public string? CardExpiryMonth { get; set; }
+        public string? CardExpiryYear { get; set; }
+        public string? CardCVV { get; set; }
+        
+        // Bank Transfer Details
+        public string? BankName { get; set; }
+        public string? AccountNumber { get; set; }
+        public string? AccountHolderName { get; set; }
+        public string? ReferenceNumber { get; set; }
+        
+        // Digital Wallet Details
+        public string? WalletType { get; set; }
+        public string? WalletPhoneNumber { get; set; }
+        public string? WalletPIN { get; set; }
         
         public decimal TotalAmount => CartItems.Sum(item => item.TotalPrice);
     }
@@ -163,6 +185,7 @@ namespace ReacodeApp.Models
         public decimal TotalSales { get; set; }
         public List<Order> RecentOrders { get; set; } = new();
         public List<User> RecentUsers { get; set; } = new();
+        public List<Notification> Notifications { get; set; } = new();
     }
 
     public class AdminReportsViewModel
@@ -336,5 +359,16 @@ namespace ReacodeApp.Models
         public string SocialMediaFacebook { get; set; } = string.Empty;
         public string SocialMediaTwitter { get; set; } = string.Empty;
         public string SocialMediaInstagram { get; set; } = string.Empty;
+    }
+
+    public class PlaceOrderRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public string? DeliveryNotes { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
     }
 }

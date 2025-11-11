@@ -17,8 +17,11 @@ namespace ReacodeApp.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<ProductReview> ProductReviews { get; set; }
+        public DbSet<FarmerRating> FarmerRatings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,6 +80,30 @@ namespace ReacodeApp.Data
                 .HasForeignKey(pr => pr.BuyerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure FarmerRating relationships
+            modelBuilder.Entity<FarmerRating>()
+                .HasOne(fr => fr.Farmer)
+                .WithMany()
+                .HasForeignKey(fr => fr.FarmerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FarmerRating>()
+                .HasOne(fr => fr.Buyer)
+                .WithMany()
+                .HasForeignKey(fr => fr.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FarmerRating>()
+                .HasOne(fr => fr.Order)
+                .WithMany()
+                .HasForeignKey(fr => fr.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FarmerRating>()
+                .HasIndex(fr => new { fr.OrderId, fr.BuyerId })
+                .IsUnique();
+
+            
             // Configure Favorite relationships
             modelBuilder.Entity<Favorite>()
                 .HasOne(f => f.User)
@@ -101,6 +128,31 @@ namespace ReacodeApp.Data
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Cart relationships
+            modelBuilder.Entity<Cart>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Cart>()
+                .HasOne(c => c.Product)
+                .WithMany()
+                .HasForeignKey(c => c.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ensure unique cart item per user-product combination
+            modelBuilder.Entity<Cart>()
+                .HasIndex(c => new { c.UserId, c.ProductId })
+                .IsUnique();
+
+            // Configure PaymentTransaction relationships
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(pt => pt.Order)
+                .WithMany()
+                .HasForeignKey(pt => pt.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Seed initial data
             SeedData(modelBuilder);

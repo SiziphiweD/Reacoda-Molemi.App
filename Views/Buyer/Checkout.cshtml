@@ -1,6 +1,8 @@
 @model CheckoutViewModel
+@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Checkout";
+    var stripePublishableKey = Configuration["Stripe:PublishableKey"] ?? "";
 }
 
 <div class="container py-4">
@@ -17,7 +19,8 @@
         </div>
     </div>
 
-    <form asp-action="ProcessCheckout" method="post">
+    <form id="checkoutForm" asp-action="ProcessCheckout" asp-controller="Buyer" method="post">
+        @Html.AntiForgeryToken()
         <div class="row">
             <!-- Delivery Information -->
             <div class="col-lg-8 mb-4">
@@ -28,7 +31,21 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+                        @if (TempData["Success"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+                        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
                         
                         <div class="mb-3">
                             <label asp-for="DeliveryAddress" class="form-label"></label>
@@ -36,7 +53,7 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-home"></i>
                                 </span>
-                                <input asp-for="DeliveryAddress" class="form-control" placeholder="Street address" />
+                                <input asp-for="DeliveryAddress" class="form-control" placeholder="Street address" required />
                             </div>
                             <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
                         </div>
@@ -48,7 +65,7 @@
                                     <span class="input-group-text">
                                         <i class="fas fa-city"></i>
                                     </span>
-                                    <input asp-for="DeliveryCity" class="form-control" placeholder="City" />
+                                    <input asp-for="DeliveryCity" class="form-control" placeholder="City" required />
                                 </div>
                                 <span asp-validation-for="DeliveryCity" class="text-danger"></span>
                             </div>
@@ -58,7 +75,7 @@
                                     <span class="input-group-text">
                                         <i class="fas fa-map"></i>
                                     </span>
-                                    <select asp-for="DeliveryProvince" class="form-select">
+                                    <select asp-for="DeliveryProvince" class="form-select" required>
                                         <option value="">Select Province</option>
                                         <option value="Eastern Cape">Eastern Cape</option>
                                         <option value="Free State">Free State</option>
@@ -82,7 +99,8 @@
                                     <span class="input-group-text">
                                         <i class="fas fa-mail-bulk"></i>
                                     </span>
-                                    <input asp-for="DeliveryPostalCode" class="form-control" placeholder="Postal code" />
+                                    <input asp-for="DeliveryPostalCode" class="form-control" placeholder="Postal code (4 digits)" required pattern="[0-9]{4}" maxlength="4" />
+                                    <small class="text-muted">Enter 4-digit postal code</small>
                                 </div>
                                 <span asp-validation-for="DeliveryPostalCode" class="text-danger"></span>
                             </div>
@@ -108,42 +126,208 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check">
-                                    <input asp-for="PaymentMethod" class="form-check-input" type="radio" value="@PaymentMethod.CashOnDelivery" id="cashOnDelivery" checked>
-                                    <label class="form-check-label" for="cashOnDelivery">
-                                        <i class="fas fa-money-bill-wave me-2"></i>Cash on Delivery
+                        <div class="payment-methods">
+                            <div class="payment-option">
+                                <div class="form-check payment-option-card">
+                                    <input asp-for="PaymentMethod" class="form-check-input payment-method-radio" type="radio" value="@PaymentMethod.CashOnDelivery" id="cashOnDelivery" checked>
+                                    <label class="form-check-label payment-option-label" for="cashOnDelivery">
+                                        <div class="payment-option-content">
+                                            <i class="fas fa-money-bill-wave payment-icon"></i>
+                                            <div>
+                                                <strong>Cash on Delivery</strong>
+                                                <small class="d-block text-muted">Pay when your order is delivered</small>
+                                            </div>
+                                        </div>
                                     </label>
                                 </div>
-                                <small class="text-muted">Pay when your order is delivered</small>
+                                <div class="payment-details" id="cashOnDeliveryDetails" style="display: none;">
+                                    <div class="alert alert-info mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Cash Payment:</strong> Please have the exact amount ready when your order arrives. Our delivery driver will collect payment upon delivery.
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check">
-                                    <input asp-for="PaymentMethod" class="form-check-input" type="radio" value="@PaymentMethod.CreditCard" id="creditCard">
-                                    <label class="form-check-label" for="creditCard">
-                                        <i class="fas fa-credit-card me-2"></i>Credit Card
+
+                            <div class="payment-option">
+                                <div class="form-check payment-option-card">
+                                    <input asp-for="PaymentMethod" class="form-check-input payment-method-radio" type="radio" value="@PaymentMethod.CreditCard" id="creditCard">
+                                    <label class="form-check-label payment-option-label" for="creditCard">
+                                        <div class="payment-option-content">
+                                            <i class="fas fa-credit-card payment-icon"></i>
+                                            <div>
+                                                <strong>Credit/Debit Card</strong>
+                                                <small class="d-block text-muted">Pay securely with your card</small>
+                                            </div>
+                                        </div>
                                     </label>
                                 </div>
-                                <small class="text-muted">Pay securely with your credit card</small>
+                                <div class="payment-details" id="creditCardDetails" style="display: none;">
+                                    <div class="payment-form-card">
+                                        <div class="mb-3">
+                                            <label class="form-label">Card Number</label>
+                                            <input asp-for="CardNumber" type="text" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNumber">
+                                            <small class="text-muted">Enter your 16-digit card number</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Cardholder Name</label>
+                                            <input asp-for="CardHolderName" type="text" class="form-control" placeholder="John Doe" id="cardHolderName">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Expiry Date</label>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <select asp-for="CardExpiryMonth" class="form-select" id="cardExpiryMonth">
+                                                            <option value="">Month</option>
+                                                            @for (int i = 1; i <= 12; i++)
+                                                            {
+                                                                <option value="@i.ToString("00")">@i.ToString("00")</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <select asp-for="CardExpiryYear" class="form-select" id="cardExpiryYear">
+                                                            <option value="">Year</option>
+                                                            @for (int i = DateTime.Now.Year; i <= DateTime.Now.Year + 10; i++)
+                                                            {
+                                                                <option value="@i">@i</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">CVV</label>
+                                                <input asp-for="CardCVV" type="text" class="form-control" placeholder="123" maxlength="4" id="cardCVV">
+                                                <small class="text-muted">3 or 4 digits on the back of your card</small>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="fas fa-lock me-2"></i>
+                                            <small>Your payment information is encrypted and secure</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check">
-                                    <input asp-for="PaymentMethod" class="form-check-input" type="radio" value="@PaymentMethod.BankTransfer" id="bankTransfer">
-                                    <label class="form-check-label" for="bankTransfer">
-                                        <i class="fas fa-university me-2"></i>Bank Transfer
+
+                            <div class="payment-option">
+                                <div class="form-check payment-option-card">
+                                    <input asp-for="PaymentMethod" class="form-check-input payment-method-radio" type="radio" value="@PaymentMethod.BankTransfer" id="bankTransfer">
+                                    <label class="form-check-label payment-option-label" for="bankTransfer">
+                                        <div class="payment-option-content">
+                                            <i class="fas fa-university payment-icon"></i>
+                                            <div>
+                                                <strong>Bank Transfer</strong>
+                                                <small class="d-block text-muted">Transfer directly from your bank</small>
+                                            </div>
+                                        </div>
                                     </label>
                                 </div>
-                                <small class="text-muted">Transfer directly from your bank account</small>
+                                <div class="payment-details" id="bankTransferDetails" style="display: none;">
+                                    <div class="payment-form-card">
+                                        <div class="mb-3">
+                                            <label class="form-label">Bank Name</label>
+                                            <select asp-for="BankName" class="form-select" id="bankName">
+                                                <option value="">Select Bank</option>
+                                                <option value="Standard Bank">Standard Bank</option>
+                                                <option value="First National Bank (FNB)">First National Bank (FNB)</option>
+                                                <option value="Absa Bank">Absa Bank</option>
+                                                <option value="Nedbank">Nedbank</option>
+                                                <option value="Capitec Bank">Capitec Bank</option>
+                                                <option value="Investec">Investec</option>
+                                                <option value="African Bank">African Bank</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Account Number</label>
+                                            <input asp-for="AccountNumber" type="text" class="form-control" placeholder="Enter your account number" id="accountNumber">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Account Holder Name</label>
+                                            <input asp-for="AccountHolderName" type="text" class="form-control" placeholder="Account holder name as it appears on bank statement" id="accountHolderName">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Reference Number (Optional)</label>
+                                            <input asp-for="ReferenceNumber" type="text" class="form-control" placeholder="Enter reference number if required" id="referenceNumber">
+                                            <small class="text-muted">Use this reference when making the transfer</small>
+                                        </div>
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <small><strong>Note:</strong> After placing your order, you'll receive bank transfer details. Please complete the transfer within 24 hours to confirm your order.</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check">
-                                    <input asp-for="PaymentMethod" class="form-check-input" type="radio" value="@PaymentMethod.Wallet" id="wallet">
-                                    <label class="form-check-label" for="wallet">
-                                        <i class="fas fa-wallet me-2"></i>Digital Wallet
+
+                            <div class="payment-option">
+                                <div class="form-check payment-option-card">
+                                    <input asp-for="PaymentMethod" class="form-check-input payment-method-radio" type="radio" value="@PaymentMethod.Wallet" id="wallet">
+                                    <label class="form-check-label payment-option-label" for="wallet">
+                                        <div class="payment-option-content">
+                                            <i class="fas fa-wallet payment-icon"></i>
+                                            <div>
+                                                <strong>Digital Wallet</strong>
+                                                <small class="d-block text-muted">Pay using mobile money or digital wallet</small>
+                                            </div>
+                                        </div>
                                     </label>
                                 </div>
-                                <small class="text-muted">Pay using your digital wallet</small>
+                                <div class="payment-details" id="walletDetails" style="display: none;">
+                                    <div class="payment-form-card">
+                                        <div class="mb-3">
+                                            <label class="form-label">Wallet Type</label>
+                                            <select asp-for="WalletType" class="form-select" id="walletType">
+                                                <option value="">Select Wallet Type</option>
+                                                <option value="M-Pesa">M-Pesa</option>
+                                                <option value="Vodacom M-Pesa">Vodacom M-Pesa</option>
+                                                <option value="MTN Mobile Money">MTN Mobile Money</option>
+                                                <option value="Airtel Money">Airtel Money</option>
+                                                <option value="Apple Pay">Apple Pay</option>
+                                                <option value="Google Pay">Google Pay</option>
+                                                <option value="Samsung Pay">Samsung Pay</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Phone Number</label>
+                                            <input asp-for="WalletPhoneNumber" type="tel" class="form-control" placeholder="+27 12 345 6789" id="walletPhoneNumber">
+                                            <small class="text-muted">Enter the phone number linked to your wallet</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">PIN / Password</label>
+                                            <input asp-for="WalletPIN" type="password" class="form-control" placeholder="Enter your wallet PIN" maxlength="6" id="walletPIN">
+                                            <small class="text-muted">Enter your wallet PIN to authorize the payment</small>
+                                        </div>
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            <small>Your PIN is encrypted and will not be stored</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-option">
+                                <div class="form-check payment-option-card">
+                                    <input asp-for="PaymentMethod" class="form-check-input payment-method-radio" type="radio" value="@PaymentMethod.Stripe" id="stripe">
+                                    <label class="form-check-label payment-option-label" for="stripe">
+                                        <div class="payment-option-content">
+                                            <i class="fab fa-stripe payment-icon"></i>
+                                            <div>
+                                                <strong>Card Payment (Stripe)</strong>
+                                                <small class="d-block text-muted">Secure card payment via Stripe</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="payment-details" id="stripeDetails" style="display: none;">
+                                    <div class="payment-form-card">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <small><strong>Test Mode:</strong> Use test card <strong>4242 4242 4242 4242</strong> with any future expiry date, any CVV, and any name for testing.</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <span asp-validation-for="PaymentMethod" class="text-danger"></span>
@@ -192,9 +376,16 @@
                         </div>
                         
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
+                            <!-- Stripe Payment Button -->
+                            <button type="button" id="payWithStripeBtn" class="btn btn-primary btn-lg" style="display: none; background: linear-gradient(135deg, #635BFF 0%, #0A2540 100%); border: none;">
+                                <i class="fab fa-stripe me-2"></i>Pay with Card (Stripe)
+                            </button>
+                            
+                            <!-- Traditional Place Order Button (for Cash on Delivery, etc.) -->
+                            <button type="submit" id="placeOrderBtn" class="btn btn-success btn-lg">
                                 <i class="fas fa-check me-2"></i>Place Order
                             </button>
+                            
                             <a asp-action="Cart" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Back to Cart
                             </a>
@@ -236,39 +427,142 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
     <script>
+        // Stripe publishable key from configuration
+        const stripePublishableKey = '@stripePublishableKey';
+        let stripe = null;
+        if (stripePublishableKey) {
+            stripe = Stripe(stripePublishableKey);
+        }
+
+        // Payment method selection
         document.addEventListener('DOMContentLoaded', function() {
-            // Form validation
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(e) {
-                const paymentMethod = document.querySelector('input[name="PaymentMethod"]:checked');
-                if (!paymentMethod) {
-                    e.preventDefault();
-                    showToast('Please select a payment method', 'error');
+            const paymentRadios = document.querySelectorAll('.payment-method-radio');
+            const payWithStripeBtn = document.getElementById('payWithStripeBtn');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.querySelectorAll('.payment-details').forEach(detail => {
+                        detail.style.display = 'none';
+                    });
+                    const detailsId = this.id + 'Details';
+                    const detailsElement = document.getElementById(detailsId);
+                    if (detailsElement) {
+                        detailsElement.style.display = 'block';
+                    }
+
+                    // Show/hide payment buttons based on selected method
+                    if (this.value === '@PaymentMethod.Stripe') {
+                        payWithStripeBtn.style.display = 'block';
+                        placeOrderBtn.style.display = 'none';
+                    } else {
+                        payWithStripeBtn.style.display = 'none';
+                        placeOrderBtn.style.display = 'block';
+                    }
+                });
+            });
+            
+            const checkedRadio = document.querySelector('.payment-method-radio:checked');
+            if (checkedRadio) {
+                const detailsId = checkedRadio.id + 'Details';
+                const detailsElement = document.getElementById(detailsId);
+                if (detailsElement) {
+                    detailsElement.style.display = 'block';
+                }
+
+                // Show/hide payment buttons based on initial selection
+                if (checkedRadio.value === '@PaymentMethod.Stripe') {
+                    payWithStripeBtn.style.display = 'block';
+                    placeOrderBtn.style.display = 'none';
+                } else {
+                    payWithStripeBtn.style.display = 'none';
+                    placeOrderBtn.style.display = 'block';
+                }
+            }
+
+            // Stripe payment button click handler
+            payWithStripeBtn.addEventListener('click', async function() {
+                const button = this;
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+                // Validate delivery information
+                const deliveryAddress = document.querySelector('input[name="DeliveryAddress"]').value;
+                const deliveryCity = document.querySelector('input[name="DeliveryCity"]').value;
+                const deliveryProvince = document.querySelector('select[name="DeliveryProvince"]').value;
+                const deliveryPostalCode = document.querySelector('input[name="DeliveryPostalCode"]').value;
+                const deliveryNotes = document.querySelector('textarea[name="DeliveryNotes"]')?.value || '';
+
+                if (!deliveryAddress || !deliveryCity || !deliveryProvince || !deliveryPostalCode) {
+                    alert('Please fill in all required delivery information.');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
                     return;
                 }
-                
-                // Show loading state
-                const submitButton = document.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+                // Validate postal code format
+                if (!/^\d{4}$/.test(deliveryPostalCode)) {
+                    alert('Postal code must be exactly 4 digits.');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    return;
+                }
+
+                // Get anti-forgery token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                try {
+                    // Create checkout session
+                    const response = await fetch('@Url.Action("CreateCheckoutSession", "Payment")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            deliveryAddress: deliveryAddress,
+                            deliveryCity: deliveryCity,
+                            deliveryProvince: deliveryProvince,
+                            deliveryPostalCode: deliveryPostalCode,
+                            deliveryNotes: deliveryNotes
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success && data.sessionId) {
+                        // Redirect to Stripe Checkout
+                        if (stripe) {
+                            const result = await stripe.redirectToCheckout({
+                                sessionId: data.sessionId
+                            });
+
+                            if (result.error) {
+                                alert(result.error.message);
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                            }
+                        } else {
+                            // Fallback: redirect to session URL
+                            window.location.href = data.url;
+                        }
+                    } else {
+                        alert(data.message || 'Failed to create payment session. Please try again.');
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
             });
         });
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `alert alert-${type === 'success' ? 'success' : 'error'} position-fixed`;
-            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
     </script>
 }
 

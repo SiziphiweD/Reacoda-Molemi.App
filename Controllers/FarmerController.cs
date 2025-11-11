@@ -143,6 +143,72 @@ namespace ReacodeApp.Controllers
                 return View(model);
             }
 
+            string? imageUrl = "/images/default-product.jpg";
+            bool hasImage = false;
+
+            // Handle image file upload
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
+            {
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var fileExtension = Path.GetExtension(model.ImageFile.FileName).ToLowerInvariant();
+                
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    ModelState.AddModelError("ImageFile", "Only JPG, PNG, and GIF images are allowed.");
+                    model.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+                    return View(model);
+                }
+
+                // Validate file size (5MB max)
+                if (model.ImageFile.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("ImageFile", "Image size must be less than 5MB.");
+                    model.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
+                    return View(model);
+                }
+
+                // Create images/products directory if it doesn't exist
+                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products");
+                if (!Directory.Exists(imagesPath))
+                {
+                    Directory.CreateDirectory(imagesPath);
+                }
+
+                // Generate unique filename
+                var fileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(imagesPath, fileName);
+
+                // Save file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.ImageFile.CopyToAsync(stream);
+                }
+
+                imageUrl = $"/images/products/{fileName}";
+                hasImage = true;
+            }
+
+            // Determine product status: Pending if image uploaded, otherwise Approved
+            var productStatus = hasImage ? ProductStatus.Pending : ProductStatus.Approved;
+
+            // Convert dates to UTC for PostgreSQL
+            DateTime? harvestDateUtc = null;
+            if (model.HarvestDate.HasValue)
+            {
+                harvestDateUtc = model.HarvestDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(model.HarvestDate.Value, DateTimeKind.Utc)
+                    : model.HarvestDate.Value.ToUniversalTime();
+            }
+
+            DateTime? expiryDateUtc = null;
+            if (model.ExpiryDate.HasValue)
+            {
+                expiryDateUtc = model.ExpiryDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(model.ExpiryDate.Value, DateTimeKind.Utc)
+                    : model.ExpiryDate.Value.ToUniversalTime();
+            }
+
             var product = new Product
             {
                 Name = model.Name,
@@ -152,12 +218,12 @@ namespace ReacodeApp.Controllers
                 CategoryId = model.CategoryId,
                 FarmerId = user.Id,
                 Location = model.Location,
-                HarvestDate = model.HarvestDate,
-                ExpiryDate = model.ExpiryDate,
-                ImageUrl = model.ImageUrl ?? "/images/default-product.jpg",
-                IsAvailable = true,
+                HarvestDate = harvestDateUtc,
+                ExpiryDate = expiryDateUtc,
+                ImageUrl = imageUrl,
+                IsAvailable = productStatus == ProductStatus.Approved,
                 IsActive = true,
-                Status = ProductStatus.Approved,
+                Status = productStatus,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -165,7 +231,37 @@ namespace ReacodeApp.Controllers
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = "Product added successfully!";
+            // Create notification for admin if product has image (needs approval)
+            if (hasImage)
+            {
+                var admins = await _context.Users
+                    .Where(u => u.Role == UserRole.Admin || u.Role == UserRole.SuperAdmin)
+                    .ToListAsync();
+
+                foreach (var admin in admins)
+                {
+                    var notification = new Notification
+                    {
+                        UserId = admin.Id,
+                        Title = "New Product Pending Approval",
+                        Message = $"A new product '{product.Name}' has been submitted by {user.FirstName} {user.LastName} and requires approval.",
+                        Type = NotificationType.Product,
+                        IsRead = false,
+                        RelatedEntityId = product.Id,
+                        RelatedEntityType = "Product",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.Notifications.Add(notification);
+                }
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Product added successfully! It is pending admin approval due to image upload.";
+            }
+            else
+            {
+                TempData["Message"] = "Product added successfully!";
+            }
+
             return RedirectToAction("MyProducts");
         }
 
@@ -245,14 +341,31 @@ namespace ReacodeApp.Controllers
                 return NotFound();
             }
 
+            // Convert dates to UTC for PostgreSQL
+            DateTime? harvestDateUtc = null;
+            if (model.HarvestDate.HasValue)
+            {
+                harvestDateUtc = model.HarvestDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(model.HarvestDate.Value, DateTimeKind.Utc)
+                    : model.HarvestDate.Value.ToUniversalTime();
+            }
+
+            DateTime? expiryDateUtc = null;
+            if (model.ExpiryDate.HasValue)
+            {
+                expiryDateUtc = model.ExpiryDate.Value.Kind == DateTimeKind.Unspecified
+                    ? DateTime.SpecifyKind(model.ExpiryDate.Value, DateTimeKind.Utc)
+                    : model.ExpiryDate.Value.ToUniversalTime();
+            }
+
             product.Name = model.Name;
             product.Description = model.Description;
             product.PricePerKg = model.PricePerKg;
             product.AvailableQuantity = model.AvailableQuantity;
             product.CategoryId = model.CategoryId;
             product.Location = model.Location;
-            product.HarvestDate = model.HarvestDate;
-            product.ExpiryDate = model.ExpiryDate;
+            product.HarvestDate = harvestDateUtc;
+            product.ExpiryDate = expiryDateUtc;
             product.ImageUrl = model.ImageUrl ?? product.ImageUrl;
             product.IsAvailable = model.IsAvailable;
             product.UpdatedAt = DateTime.UtcNow;
@@ -264,7 +377,7 @@ namespace ReacodeApp.Controllers
         }
 
         // Orders Received - Show buyer orders
-        public async Task<IActionResult> OrdersReceived()
+        public async Task<IActionResult> OrdersReceived(int? orderId = null)
         {
             if (!_sessionService.IsLoggedIn())
             {
@@ -284,6 +397,11 @@ namespace ReacodeApp.Controllers
                 .Where(o => o.FarmerId == user.Id)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
+
+            if (orderId.HasValue)
+            {
+                ViewBag.HighlightOrderId = orderId.Value;
+            }
 
             return View(orders);
         }
@@ -305,12 +423,19 @@ namespace ReacodeApp.Controllers
             var order = await _context.Orders
                 .Include(o => o.Buyer)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(o => o.Id == id && o.FarmerId == user.Id);
 
             if (order == null)
             {
                 return NotFound();
+            }
+
+            // Ensure OrderItems is initialized
+            if (order.OrderItems == null)
+            {
+                order.OrderItems = new List<OrderItem>();
             }
 
             return View(order);
@@ -340,17 +465,34 @@ namespace ReacodeApp.Controllers
                 return NotFound();
             }
 
+            // Check if order is still pending
+            if (order.Status != OrderStatus.Pending)
+            {
+                TempData["Error"] = "This order has already been processed.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            // Check if 30 minutes have passed
+            if (order.ResponseDeadline.HasValue && DateTime.UtcNow > order.ResponseDeadline.Value)
+            {
+                TempData["Error"] = "The 30-minute deadline for accepting this order has passed. Please contact support.";
+                return RedirectToAction("OrdersReceived");
+            }
+
             order.Status = OrderStatus.Accepted;
+            order.EstimatedDeliveryDate = DateTime.UtcNow.AddDays(3); // 3 days estimated delivery
             order.UpdatedAt = DateTime.UtcNow;
 
             // Create notification for buyer
             var notification = new Notification
             {
                 UserId = order.BuyerId,
-                Title = "Order Confirmed",
-                Message = $"Your order #{order.Id} has been confirmed by the farmer.",
+                Title = "Order Accepted",
+                Message = $"Your order #{order.OrderNumber} has been accepted by the farmer. Estimated delivery: {order.EstimatedDeliveryDate.Value:MMMM dd, yyyy}.",
                 Type = NotificationType.Order,
                 IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -361,9 +503,8 @@ namespace ReacodeApp.Controllers
             return RedirectToAction("OrderDetails", new { id });
         }
 
-        // Reject Order
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        // Reject Order - Show form
+        [HttpGet]
         public async Task<IActionResult> RejectOrder(int id)
         {
             if (!_sessionService.IsLoggedIn())
@@ -378,6 +519,9 @@ namespace ReacodeApp.Controllers
             }
 
             var order = await _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.Id == id && o.FarmerId == user.Id);
 
             if (order == null)
@@ -385,31 +529,19 @@ namespace ReacodeApp.Controllers
                 return NotFound();
             }
 
-            order.Status = OrderStatus.Cancelled;
-            order.UpdatedAt = DateTime.UtcNow;
-
-            // Create notification for buyer
-            var notification = new Notification
+            if (order.Status != OrderStatus.Pending)
             {
-                UserId = order.BuyerId,
-                Title = "Order Rejected",
-                Message = $"Your order #{order.Id} has been rejected by the farmer.",
-                Type = NotificationType.Order,
-                IsRead = false,
-                CreatedAt = DateTime.UtcNow
-            };
+                TempData["Error"] = "This order has already been processed.";
+                return RedirectToAction("OrdersReceived");
+            }
 
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
-
-            TempData["Message"] = "Order rejected.";
-            return RedirectToAction("OrderDetails", new { id });
+            return View(order);
         }
 
-        // Mark as Shipped
+        // Reject Order - Process rejection
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkShipped(int id)
+        public async Task<IActionResult> RejectOrder(int id, string rejectionReason)
         {
             if (!_sessionService.IsLoggedIn())
             {
@@ -430,25 +562,227 @@ namespace ReacodeApp.Controllers
                 return NotFound();
             }
 
-            order.Status = OrderStatus.Shipped;
+            // Check if order is still pending
+            if (order.Status != OrderStatus.Pending)
+            {
+                TempData["Error"] = "This order has already been processed.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            // Check if 30 minutes have passed
+            if (order.ResponseDeadline.HasValue && DateTime.UtcNow > order.ResponseDeadline.Value)
+            {
+                TempData["Error"] = "The 30-minute deadline for rejecting this order has passed. Please contact support.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            // Validate rejection reason
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+            {
+                TempData["Error"] = "Please provide a reason for rejecting this order.";
+                return RedirectToAction("RejectOrder", new { id });
+            }
+
+            order.Status = OrderStatus.Rejected;
+            order.RejectionReason = rejectionReason;
             order.UpdatedAt = DateTime.UtcNow;
 
-            // Create notification for buyer
+            // Restore product quantities
+            var orderItems = await _context.OrderItems
+                .Include(oi => oi.Product)
+                .Where(oi => oi.OrderId == order.Id)
+                .ToListAsync();
+
+            foreach (var item in orderItems)
+            {
+                if (item.Product != null)
+                {
+                    item.Product.AvailableQuantity += item.Quantity;
+                    if (item.Product.AvailableQuantity > 0 && !item.Product.IsAvailable)
+                    {
+                        item.Product.IsAvailable = true;
+                    }
+                }
+            }
+
+            // Create notification for buyer with rejection reason
             var notification = new Notification
             {
                 UserId = order.BuyerId,
-                Title = "Order Shipped",
-                Message = $"Your order #{order.Id} has been shipped and is on its way.",
+                Title = "Order Rejected",
+                Message = $"Your order #{order.OrderNumber} has been rejected by the farmer. Reason: {rejectionReason}",
                 Type = NotificationType.Order,
                 IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = "Order marked as shipped!";
-            return RedirectToAction("OrderDetails", new { id });
+            TempData["Message"] = "Order rejected successfully.";
+            return RedirectToAction("OrdersReceived");
+        }
+
+        // Mark as Shipped - Show form
+        [HttpGet]
+        public async Task<IActionResult> MarkShipped(int id)
+        {
+            if (!_sessionService.IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var user = _sessionService.GetUser();
+            if (user == null || user.Role != UserRole.Farmer)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o => o.Id == id && o.FarmerId == user.Id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.Status != OrderStatus.Accepted)
+            {
+                TempData["Error"] = "Only accepted orders can be marked as shipped.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            return View(order);
+        }
+
+        // Mark as Shipped - Process
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkShipped(int id, string trackingNumber, DateTime? estimatedDeliveryDate)
+        {
+            if (!_sessionService.IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var user = _sessionService.GetUser();
+            if (user == null || user.Role != UserRole.Farmer)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == id && o.FarmerId == user.Id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.Status != OrderStatus.Accepted)
+            {
+                TempData["Error"] = "Only accepted orders can be marked as shipped.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            order.Status = OrderStatus.Shipped;
+            order.ShippedDate = DateTime.UtcNow;
+            order.TrackingNumber = trackingNumber;
+            if (estimatedDeliveryDate.HasValue)
+            {
+                order.EstimatedDeliveryDate = estimatedDeliveryDate.Value.ToUniversalTime();
+            }
+            else
+            {
+                order.EstimatedDeliveryDate = DateTime.UtcNow.AddDays(3); // Default 3 days
+            }
+            order.UpdatedAt = DateTime.UtcNow;
+
+            // Create notification for buyer
+            var trackingInfo = !string.IsNullOrWhiteSpace(trackingNumber) 
+                ? $" Tracking Number: {trackingNumber}." 
+                : "";
+            var deliveryInfo = order.EstimatedDeliveryDate.HasValue 
+                ? $" Estimated delivery: {order.EstimatedDeliveryDate.Value:MMMM dd, yyyy}." 
+                : "";
+            
+            var notification = new Notification
+            {
+                UserId = order.BuyerId,
+                Title = "Order Shipped",
+                Message = $"Your order #{order.OrderNumber} has been shipped and is on its way.{trackingInfo}{deliveryInfo}",
+                Type = NotificationType.Order,
+                IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Order marked as shipped successfully!";
+            return RedirectToAction("OrdersReceived");
+        }
+
+        // Mark as Arrived - Farmer arrives at delivery location
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsArrived(int id)
+        {
+            if (!_sessionService.IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var user = _sessionService.GetUser();
+            if (user == null || user.Role != UserRole.Farmer)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Buyer)
+                .FirstOrDefaultAsync(o => o.Id == id && o.FarmerId == user.Id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.Status != OrderStatus.Shipped)
+            {
+                TempData["Error"] = "Only shipped orders can be marked as arrived.";
+                return RedirectToAction("OrdersReceived");
+            }
+
+            order.Status = OrderStatus.Arrived;
+            order.ArrivedDate = DateTime.UtcNow;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            // Create notification for buyer
+            var notification = new Notification
+            {
+                UserId = order.BuyerId,
+                Title = "Farmer Has Arrived",
+                Message = $"The farmer has arrived at your delivery location for order #{order.OrderNumber}. Please confirm that you have received your order.",
+                Type = NotificationType.Order,
+                IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Order marked as arrived! Buyer has been notified.";
+            return RedirectToAction("OrdersReceived");
         }
 
         // Earnings/Payouts - Summary of sales
@@ -528,7 +862,7 @@ namespace ReacodeApp.Controllers
         }
 
         // Farmer Profile Settings
-        public async Task<IActionResult> ProfileSettings()
+        public IActionResult ProfileSettings()
         {
             if (!_sessionService.IsLoggedIn())
             {

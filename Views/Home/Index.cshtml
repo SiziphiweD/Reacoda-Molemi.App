@@ -3,24 +3,22 @@
 }
 
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section-molemi">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6 hero-content">
-                <h1 class="hero-title fade-in-up">Welcome to Reacoda Molemi</h1>
-                <p class="hero-subtitle fade-in-up">South Africa's premier agritech marketplace connecting farmers and buyers for fresh, sustainable produce. Supporting local communities and sustainable agriculture.</p>
-                <div class="d-flex gap-3 fade-in-up">
-                    <a asp-controller="Shop" asp-action="Index" class="btn btn-light btn-lg">
-                        <i class="fas fa-store me-2"></i>Start Shopping
-                    </a>
-                    <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-seedling me-2"></i>Become a Farmer
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <i class="fas fa-seedling" style="font-size: 8rem; opacity: 0.3;"></i>
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-12 col-xl-12">
+                <div class="hero-card-molemi">
+                    <h1 class="hero-main-title">Empowering Farmers. Connecting Markets. Growing Communities.</h1>
+                    <h2 class="hero-welcome-title">Welcome to Molemi</h2>
+                    <h3 class="hero-description">Molemi connects farmers directly with buyers, ensuring fair trade and fresh produce from farm to table.</h3>
+                    <div class="hero-buttons-molemi">
+                        <a href="@Url.Action("Register", "Auth", new { role = "Farmer" })" class="btn btn-hero-farmer">
+                            Join as a Farmer
+                        </a>
+                        <a asp-controller="Shop" asp-action="Index" class="btn btn-hero-shop">
+                            Shop Now
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -28,107 +26,159 @@
 </section>
 
 <!-- Features Section -->
-<section class="py-5">
+<section class="features-section-modern py-5">
     <div class="container">
         <div class="row text-center mb-5">
             <div class="col-12">
-                <h2 class="fw-bold mb-3">Why Choose Reacoda Molemi?</h2>
-                <p class="text-muted">Connecting farmers and buyers for a sustainable future</p>
+                <div class="section-badge">Why Choose Us</div>
             </div>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="fas fa-leaf text-primary-green" style="font-size: 3rem;"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Fresh & Organic</h5>
-                        <p class="card-text text-muted">Get the freshest produce directly from local farms, ensuring maximum nutrition and taste.</p>
+        <div class="features-content">
+            <div class="feature-item">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-leaf"></i>
                     </div>
                 </div>
+                <h5 class="feature-title">Fresh & Organic</h5>
+                <p class="feature-text">Get the freshest produce directly from local farms, ensuring maximum nutrition and taste.</p>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="fas fa-truck text-primary-green" style="font-size: 3rem;"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Fast Delivery</h5>
-                        <p class="card-text text-muted">Quick and reliable delivery to your doorstep, maintaining freshness throughout the journey.</p>
+            <div class="feature-item">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
                     </div>
                 </div>
+                <h5 class="feature-title">Fast Delivery</h5>
+                <p class="feature-text">Quick and reliable delivery to your doorstep, maintaining freshness throughout the journey.</p>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <i class="fas fa-heart text-primary-green" style="font-size: 3rem;"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Support Local</h5>
-                        <p class="card-text text-muted">Support local farmers and communities while getting the best quality produce.</p>
+            <div class="feature-item">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-heart"></i>
                     </div>
                 </div>
+                <h5 class="feature-title">Support Local</h5>
+                <p class="feature-text">Support local farmers and communities while getting the best quality produce.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- How It Works Section -->
-<section class="py-5 bg-accent-cream">
+<section class="how-it-works-section py-5">
     <div class="container">
         <div class="row text-center mb-5">
             <div class="col-12">
-                <h2 class="fw-bold mb-3">How It Works</h2>
-                <p class="text-muted">Simple steps to get started</p>
+                <div class="section-badge">How It Works</div>
             </div>
         </div>
-        <div class="row g-4">
-            <div class="col-md-4 text-center">
-                <div class="mb-3">
-                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <span class="fw-bold fs-4">1</span>
+        <div class="how-it-works-cards">
+            <!-- How It Works as a Farmer Card (Left) -->
+            <div class="how-it-works-card">
+                <h3 class="how-it-works-card-title">How It Works as a Farmer</h3>
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">1</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Register as a Farmer</h5>
+                            <p class="step-text">Create your farmer account with your business details. Provide information about your farm, location, and farming practices.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">2</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Complete Verification</h5>
+                            <p class="step-text">Submit required documents for verification including farm registration, certifications, and proof of farming activities. Our team reviews and approves your account.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">3</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">List Your Produce</h5>
+                            <p class="step-text">Add photos and details of your fresh produce. Set competitive prices, manage inventory, and create attractive listings to attract buyers.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">4</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Manage Orders & Grow</h5>
+                            <p class="step-text">Receive orders, communicate with buyers, manage deliveries, and track your sales. Build your reputation and grow your farming business.</p>
+                        </div>
                     </div>
                 </div>
-                <h5 class="fw-bold">Browse Products</h5>
-                <p class="text-muted">Explore fresh produce from local farmers in your area.</p>
             </div>
-            <div class="col-md-4 text-center">
-                <div class="mb-3">
-                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <span class="fw-bold fs-4">2</span>
+            
+            <!-- How It Works as a Buyer Card (Right) -->
+            <div class="how-it-works-card">
+                <h3 class="how-it-works-card-title">How It Works as a Buyer</h3>
+                <div class="steps-list">
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">1</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Create Your Account</h5>
+                            <p class="step-text">Sign up quickly with your email or phone number. Set up your profile and delivery preferences to get started.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">2</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Browse Fresh Produce</h5>
+                            <p class="step-text">Explore a wide variety of fresh produce from verified local farmers. Filter by category, location, price, or search for specific items.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">3</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Add to Cart & Checkout</h5>
+                            <p class="step-text">Select your favorite items, add them to your cart, and proceed to secure checkout with multiple payment options.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number-wrapper">
+                            <div class="step-number">4</div>
+                        </div>
+                        <div class="step-content">
+                            <h5 class="step-title">Track & Receive</h5>
+                            <p class="step-text">Track your order in real-time and receive fresh produce delivered directly to your doorstep. Rate and review your experience.</p>
+                        </div>
                     </div>
                 </div>
-                <h5 class="fw-bold">Add to Cart</h5>
-                <p class="text-muted">Select your favorite items and add them to your cart.</p>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="mb-3">
-                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <span class="fw-bold fs-4">3</span>
-                    </div>
-                </div>
-                <h5 class="fw-bold">Get Delivered</h5>
-                <p class="text-muted">Receive fresh produce delivered to your doorstep.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="py-5">
+<section class="cta-section-modern py-5">
     <div class="container">
         <div class="row">
-            <div class="col-12 text-center">
-                <h2 class="fw-bold mb-3">Ready to Get Started?</h2>
-                <p class="text-muted mb-4">Join thousands of satisfied customers and farmers</p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a asp-controller="Auth" asp-action="Register" class="btn btn-primary btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>Sign Up Now
-                    </a>
-                    <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-store me-2"></i>Browse Products
-                    </a>
+            <div class="col-12">
+                <div class="cta-card-modern text-center">
+                    <h2 class="cta-title">Ready to Get Started?</h2>
+                    <p class="cta-subtitle">Join thousands of satisfied customers and farmers</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-3 cta-buttons">
+                        <a href="@Url.Action("Register", "Auth")" class="btn btn-cta-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up Now
+                        </a>
+                        <a href="@Url.Action("Index", "Shop")" class="btn btn-cta-secondary btn-lg">
+                            <i class="fas fa-store me-2"></i>Browse Products
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

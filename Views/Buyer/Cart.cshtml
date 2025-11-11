@@ -90,7 +90,7 @@
                             <a asp-action="Checkout" class="btn btn-success btn-lg">
                                 <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
                             </a>
-                            <a asp-action="Shop" class="btn btn-outline-primary">
+                            <a asp-controller="Shop" asp-action="Index" class="btn btn-outline-primary">
                                 <i class="fas fa-store me-2"></i>Continue Shopping
                             </a>
                         </div>
@@ -184,17 +184,24 @@
         const formData = new FormData();
         formData.append('productId', productId);
         formData.append('quantity', quantity);
-        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+        
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+        const headers = {};
+        if (token) {
+            headers['RequestVerificationToken'] = token;
+            formData.append('__RequestVerificationToken', token);
+        }
 
         fetch('@Url.Action("UpdateCartItem", "Buyer")', {
             method: 'POST',
+            headers: headers,
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update the cart display
-                location.reload(); // Simple reload for now
+                location.reload();
             } else {
                 showToast(data.message, 'error');
             }
@@ -212,27 +219,29 @@
 
         const formData = new FormData();
         formData.append('productId', productId);
-        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+        
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+        const headers = {};
+        if (token) {
+            headers['RequestVerificationToken'] = token;
+            formData.append('__RequestVerificationToken', token);
+        }
 
         fetch('@Url.Action("RemoveFromCart", "Buyer")', {
             method: 'POST',
+            headers: headers,
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Remove the item from the display
                 const cartItem = document.querySelector(`[data-product-id="${productId}"]`);
                 if (cartItem) {
                     cartItem.remove();
                 }
-                
-                // Update totals
                 updateTotals();
-                
                 showToast('Item removed from cart', 'success');
-                
-                // If cart is empty, reload page
                 if (data.cartCount === 0) {
                     location.reload();
                 }

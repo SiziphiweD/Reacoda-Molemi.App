@@ -1,3 +1,4 @@
+@inject ReacodeApp.Services.ISessionService SessionService
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,134 +13,205 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light">
+        <nav class="navbar navbar-expand-lg navbar-proper">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="fas fa-seedling me-2"></i>Reacoda Molemi
+                <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                    <img src="~/images/reacoda_logo.png" alt="Reacoda Molemi" class="navbar-logo" />
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
-                      <ul class="navbar-nav flex-grow-1">
-                          <li class="nav-item">
-                              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
-                                  <i class="fas fa-home me-1"></i>Home
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">
-                                  <i class="fas fa-info-circle me-1"></i>About
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Services">
-                                  <i class="fas fa-cogs me-1"></i>Services
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a class="nav-link text-dark" asp-area="" asp-controller="Shop" asp-action="Index">
-                                  <i class="fas fa-store me-1"></i>Shop
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Contact">
-                                  <i class="fas fa-envelope me-1"></i>Contact
-                              </a>
-                          </li>
-                      </ul>
-                    <ul class="navbar-nav">
-                        @if (Context.Session.GetString("CurrentUser") != null)
-                        {
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    @{
+                        var currentUser = SessionService.GetUser();
+                        var userRole = currentUser?.Role;
+                    }
+                    @if (currentUser == null)
+                    {
+                        <!-- Guest Navigation -->
+                        <ul class="navbar-nav navbar-nav-center">
                             <li class="nav-item">
-                                <a class="nav-link text-dark position-relative" asp-controller="Buyer" asp-action="Cart">
-                                    <i class="fas fa-shopping-cart me-1"></i>Cart
-                                    <span class="cart-badge position-absolute top-0 start-100 translate-middle" style="display: none;">0</span>
+                                <a class="nav-link" href="@Url.Action("Index", "Home")">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("About", "Home")">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Index", "Shop")">Shop</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Services", "Home")">Services</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Contact", "Home")">Contact</a>
+                            </li>
+                        </ul>
+                    }
+                    else if (userRole == ReacodeApp.Models.UserRole.Buyer)
+                    {
+                        <!-- Buyer Navigation -->
+                        <ul class="navbar-nav navbar-nav-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Buyer" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user me-1"></i>Account
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Buyer" asp-action="Shop">
+                                    <i class="fas fa-store me-1"></i>Shop
                                 </a>
-                                  <ul class="dropdown-menu">
-                                      <li><a class="dropdown-item" asp-controller="Home" asp-action="Profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                                      <li><a class="dropdown-item" asp-controller="Home" asp-action="Notifications"><i class="fas fa-bell me-2"></i>Notifications</a></li>
-                                      
-                                      @{
-                                          var currentUserJson = Context.Session.GetString("CurrentUser");
-                                          if (!string.IsNullOrEmpty(currentUserJson))
-                                          {
-                                              var currentUser = System.Text.Json.JsonSerializer.Deserialize<ReacodeApp.Models.User>(currentUserJson);
-                                              if (currentUser?.Role == ReacodeApp.Models.UserRole.SuperAdmin)
-                                              {
-                                                  <li><hr class="dropdown-divider"></li>
-                                                  <li><h6 class="dropdown-header text-warning"><i class="fas fa-crown me-2"></i>Super Admin Panel</h6></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="Dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="AdminManagement"><i class="fas fa-users-cog me-2"></i>Admin Management</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="SystemConfiguration"><i class="fas fa-cogs me-2"></i>System Configuration</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="AuditLogs"><i class="fas fa-clipboard-list me-2"></i>Audit Logs</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="GlobalAnalytics"><i class="fas fa-chart-line me-2"></i>Global Analytics</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="RevenueManagement"><i class="fas fa-chart-pie me-2"></i>Revenue Management</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="PlatformSettings"><i class="fas fa-palette me-2"></i>Platform Settings</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="SuperAdmin" asp-action="Profile"><i class="fas fa-crown me-2"></i>Super Admin Profile</a></li>
-                                              }
-                                              else if (currentUser?.Role == ReacodeApp.Models.UserRole.Admin)
-                                              {
-                                                  <li><hr class="dropdown-divider"></li>
-                                                  <li><h6 class="dropdown-header text-success"><i class="fas fa-shield-alt me-2"></i>Admin Panel</h6></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="UserManagement"><i class="fas fa-users me-2"></i>User Management</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="ProductVerification"><i class="fas fa-check-circle me-2"></i>Product Verification</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="OrdersManagement"><i class="fas fa-shopping-cart me-2"></i>Orders Management</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reports"><i class="fas fa-chart-bar me-2"></i>Reports</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="Messages"><i class="fas fa-comments me-2"></i>Messages</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="ProfileSettings"><i class="fas fa-user-cog me-2"></i>Profile Settings</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Admin" asp-action="Announcements"><i class="fas fa-bullhorn me-2"></i>Announcements</a></li>
-                                              }
-                                              else if (currentUser?.Role == ReacodeApp.Models.UserRole.Farmer)
-                                              {
-                                                  <li><hr class="dropdown-divider"></li>
-                                                  <li><h6 class="dropdown-header text-success"><i class="fas fa-seedling me-2"></i>Farmer Panel</h6></li>
-                                                  <li><a class="dropdown-item" asp-controller="Farmer" asp-action="Dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Farmer" asp-action="MyProducts"><i class="fas fa-box me-2"></i>My Products</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Farmer" asp-action="OrdersReceived"><i class="fas fa-shopping-cart me-2"></i>Orders</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Farmer" asp-action="Earnings"><i class="fas fa-dollar-sign me-2"></i>Earnings</a></li>
-                                              }
-                                              else if (currentUser?.Role == ReacodeApp.Models.UserRole.Buyer)
-                                              {
-                                                  <li><hr class="dropdown-divider"></li>
-                                                  <li><h6 class="dropdown-header text-info"><i class="fas fa-shopping-bag me-2"></i>Buyer Panel</h6></li>
-                                                  <li><a class="dropdown-item" asp-controller="Buyer" asp-action="Dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Buyer" asp-action="Shop"><i class="fas fa-store me-2"></i>Shop</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Buyer" asp-action="Cart"><i class="fas fa-shopping-cart me-2"></i>Cart</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Buyer" asp-action="OrdersHistory"><i class="fas fa-history me-2"></i>Order History</a></li>
-                                                  <li><a class="dropdown-item" asp-controller="Buyer" asp-action="Favorites"><i class="fas fa-heart me-2"></i>Favorites</a></li>
-                                              }
-                                          }
-                                      }
-                                      
-                                      <li><hr class="dropdown-divider"></li>
-                                      <li>
-                                          <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
-                                              <button type="submit" class="dropdown-item">
-                                                  <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                              </button>
-                                          </form>
-                                      </li>
-                                  </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" asp-controller="Buyer" asp-action="Cart">
+                                    <i class="fas fa-shopping-cart me-1"></i>Cart
+                                    <span class="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Buyer" asp-action="OrdersHistory">
+                                    <i class="fas fa-history me-1"></i>Order History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Buyer" asp-action="Favorites">
+                                    <i class="fas fa-heart me-1"></i>Favorites
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else if (userRole == ReacodeApp.Models.UserRole.Farmer)
+                    {
+                        <!-- Farmer Navigation -->
+                        <ul class="navbar-nav navbar-nav-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Farmer" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Farmer" asp-action="MyProducts">
+                                    <i class="fas fa-box me-1"></i>My Products
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Farmer" asp-action="OrdersReceived">
+                                    <i class="fas fa-shopping-bag me-1"></i>Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Farmer" asp-action="Earnings">
+                                    <i class="fas fa-dollar-sign me-1"></i>Earnings
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else if (userRole == ReacodeApp.Models.UserRole.Admin)
+                    {
+                        <!-- Admin Navigation -->
+                        <ul class="navbar-nav navbar-nav-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="UserManagement">
+                                    <i class="fas fa-users me-1"></i>Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="ProductVerification">
+                                    <i class="fas fa-check-circle me-1"></i>Products
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="OrdersManagement">
+                                    <i class="fas fa-shopping-cart me-1"></i>Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Reports">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Messages">
+                                    <i class="fas fa-envelope me-1"></i>Messages
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else if (userRole == ReacodeApp.Models.UserRole.SuperAdmin)
+                    {
+                        <!-- SuperAdmin Navigation -->
+                        <ul class="navbar-nav navbar-nav-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="SuperAdmin" asp-action="Dashboard">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="UserManagement">
+                                    <i class="fas fa-users me-1"></i>Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="SuperAdmin" asp-action="AdminManagement">
+                                    <i class="fas fa-user-shield me-1"></i>Admins
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="ProductVerification">
+                                    <i class="fas fa-check-circle me-1"></i>Products
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="OrdersManagement">
+                                    <i class="fas fa-shopping-cart me-1"></i>Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Reports">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Messages">
+                                    <i class="fas fa-envelope me-1"></i>Messages
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    <ul class="navbar-nav navbar-nav-right">
+                        @if (currentUser != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Profile", "Home")">
+                                    <i class="fas fa-user me-1"></i>Profile
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" href="@Url.Action("Notifications", "Home")">
+                                    <i class="fas fa-bell me-1"></i>Notifications
+                                    <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.7rem; min-width: 18px; height: 18px; padding: 2px 6px; line-height: 14px;">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <form action="@Url.Action("Logout", "Auth")" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="nav-link btn btn-link border-0 p-0" style="background: none; color: inherit; cursor: pointer; text-decoration: none;">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                    </button>
+                                </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Auth" asp-action="Login">
-                                    <i class="fas fa-sign-in-alt me-1"></i>Login
-                                </a>
+                                <a class="nav-link" href="@Url.Action("Login", "Auth")">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-success ms-2" asp-controller="Auth" asp-action="Register">
-                                    <i class="fas fa-user-plus me-1"></i>Sign Up
-                                </a>
+                                <a class="btn btn-primary-nav ms-2" href="@Url.Action("Register", "Auth")">Sign Up</a>
                             </li>
                         }
                     </ul>
@@ -153,53 +225,77 @@
         </main>
     </div>
 
-    <footer class="footer">
+    <footer class="footer-modern">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5 class="fw-bold mb-3">
-                        <i class="fas fa-seedling me-2"></i>Reacoda Molemi
-                    </h5>
-                    <p class="mb-3">Connecting farmers and buyers for fresh, local produce. Supporting sustainable agriculture and local communities.</p>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+            <div class="footer-content">
+                <div class="footer-section footer-about">
+                    <div class="footer-logo">
+                        <h5 class="footer-brand">
+                            <i class="fas fa-seedling me-2"></i>Reacoda Molemi
+                        </h5>
+                    </div>
+                    <p class="footer-description">Connecting farmers and buyers for fresh, local produce. Supporting sustainable agriculture and local communities.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <h6 class="fw-bold mb-3">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-white-50 text-decoration-none">About Us</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">How It Works</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">For Farmers</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">For Buyers</a></li>
+                
+                <div class="footer-section footer-links">
+                    <h6 class="footer-heading">Quick Links</h6>
+                    <ul class="footer-list">
+                        <li><a href="@Url.Action("Index", "Home")">Home</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="@Url.Action("Register", "Auth", new { role = "Farmer" })">For Farmers</a></li>
+                        <li><a href="@Url.Action("Index", "Shop")">For Buyers</a></li>
                     </ul>
                 </div>
-                <div class="col-md-2">
-                    <h6 class="fw-bold mb-3">Support</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-white-50 text-decoration-none">Help Center</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">Contact Us</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">FAQ</a></li>
-                        <li><a href="#" class="text-white-50 text-decoration-none">Terms of Service</a></li>
+                
+                <div class="footer-section footer-links">
+                    <h6 class="footer-heading">Support</h6>
+                    <ul class="footer-list">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="@Url.Action("Privacy", "Home")">Privacy Policy</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4">
-                    <h6 class="fw-bold mb-3">Contact Info</h6>
-                    <p class="mb-2"><i class="fas fa-envelope me-2"></i>support@reacoda.com</p>
-                    <p class="mb-2"><i class="fas fa-phone me-2"></i>+27 11 123 4567</p>
-                    <p class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Johannesburg, South Africa</p>
+                
+                <div class="footer-section footer-contact">
+                    <h6 class="footer-heading">Contact Info</h6>
+                    <ul class="footer-contact-list">
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>support@reacoda.com</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>+27 11 123 4567</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Tshimologong Precinct, Braamfontein, Johannesburg</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
+            
             <div class="footer-bottom">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <p class="mb-0">&copy; 2024 Reacoda Molemi. All rights reserved.</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <a asp-area="" asp-controller="Home" asp-action="Privacy" class="me-3">Privacy Policy</a>
+                <div class="footer-bottom-content">
+                    <p class="copyright">&copy; 2024 Reacoda Molemi. All rights reserved.</p>
+                    <div class="footer-legal">
+                        <a href="@Url.Action("Privacy", "Home")">Privacy Policy</a>
+                        <span class="separator">|</span>
                         <a href="#">Terms of Service</a>
                     </div>
                 </div>
@@ -210,6 +306,66 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/enhanced.js" asp-append-version="true"></script>
+    
+    @if (currentUser != null)
+    {
+        <script>
+
+            // Real-time new notification count update (shows new messages sent, not just unread)
+            function updateNotificationCount() {
+                fetch('@Url.Action("GetUnreadNotificationCount", "Home")')
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('notification-badge');
+                        if (badge) {
+                            const count = data.count || 0;
+                            badge.textContent = count;
+                            if (count > 0) {
+                                badge.style.display = 'inline-block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching notification count:', error);
+                    });
+            }
+
+            // Mark notifications as viewed when clicking on the notification link
+            document.addEventListener('DOMContentLoaded', function() {
+                const notificationLink = document.querySelector('a[href*="/Home/Notifications"]');
+                if (notificationLink) {
+                    notificationLink.addEventListener('click', function() {
+                        // Mark notifications as viewed when user clicks the link
+                        fetch('@Url.Action("MarkNotificationsAsViewed", "Home")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update badge immediately
+                                updateNotificationCount();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error marking notifications as viewed:', error);
+                        });
+                    });
+                }
+
+                // Update notification count on page load
+                updateNotificationCount();
+                
+                // Update notification count every 15 seconds for real-time updates
+                setInterval(updateNotificationCount, 15000);
+            });
+        </script>
+    }
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

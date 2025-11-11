@@ -4,263 +4,228 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold text-success">
-                    <i class="fas fa-dollar-sign me-2"></i>Earnings & Payouts
-                </h2>
-                <div class="text-muted">
-                    @Model.Farmer.FirstName @Model.Farmer.LastName
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="service-section-header">
+                <div class="service-section-icon">
+                    <i class="fas fa-dollar-sign"></i>
                 </div>
+                <h2 class="service-section-title">Earnings & Payouts</h2>
+                <p class="service-section-subtitle">Track your earnings and manage payouts for @Model.Farmer.FirstName @Model.Farmer.LastName</p>
             </div>
         </div>
     </div>
 
     <!-- Earnings Summary Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Earnings
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.TotalEarnings.ToString("N2")</div>
-                            <div class="small text-muted">From delivered orders</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+    <div class="services-cards-container mb-5">
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-chart-line"></i>
             </div>
+            <h5 class="service-card-title">Total Earnings</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2.5rem; font-weight: 700; color: var(--primary-green); display: block; margin: 0.5rem 0;">R @Model.TotalEarnings.ToString("N2")</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">From delivered orders</span>
+            </p>
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Earnings
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.PendingEarnings.ToString("N2")</div>
-                            <div class="small text-muted">From confirmed/shipped orders</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-clock"></i>
             </div>
+            <h5 class="service-card-title">Pending Earnings</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2.5rem; font-weight: 700; color: #F39C12; display: block; margin: 0.5rem 0;">R @Model.PendingEarnings.ToString("N2")</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">From confirmed/shipped orders</span>
+            </p>
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                This Month
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">R @Model.MonthlyEarnings.ToString("N2")</div>
-                            <div class="small text-muted">Earnings this month</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="service-card-small">
+            <div class="service-card-icon">
+                <i class="fas fa-calendar"></i>
             </div>
+            <h5 class="service-card-title">This Month</h5>
+            <p class="service-card-text">
+                <span style="font-size: 2.5rem; font-weight: 700; color: #3498DB; display: block; margin: 0.5rem 0;">R @Model.MonthlyEarnings.ToString("N2")</span>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">Earnings this month</span>
+            </p>
         </div>
     </div>
 
     <div class="row">
         <!-- Recent Transactions -->
         <div class="col-lg-8 mb-4">
-            <div class="card shadow">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%; text-align: left;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="service-card-title" style="margin: 0;">
                         <i class="fas fa-history me-2"></i>Recent Transactions
-                    </h6>
-                    <span class="badge bg-primary">@Model.RecentTransactions.Count transactions</span>
+                    </h5>
+                    <span class="badge-modern badge-primary">@Model.RecentTransactions.Count transactions</span>
                 </div>
-                <div class="card-body">
-                    @if (Model.RecentTransactions.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Buyer</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var transaction in Model.RecentTransactions)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <strong>#@transaction.Id</strong>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
-                                                        <i class="fas fa-user text-white"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="fw-bold">@transaction.Buyer.FirstName @transaction.Buyer.LastName</div>
-                                                        <small class="text-muted">@transaction.Buyer.Email</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <strong class="text-success">R @transaction.TotalAmount.ToString("N2")</strong>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-success">Delivered</span>
-                                            </td>
-                                            <td>
-                                                <div>@transaction.CreatedAt.ToString("MMM dd, yyyy")</div>
-                                                <small class="text-muted">@transaction.CreatedAt.ToString("HH:mm")</small>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No transactions yet</p>
-                        </div>
-                    }
-                </div>
+                @if (Model.RecentTransactions.Any())
+                {
+                    <div class="transactions-list-modern">
+                        @foreach (var transaction in Model.RecentTransactions)
+                        {
+                            <div class="transaction-item-modern">
+                                <div class="transaction-header-modern">
+                                    <div class="transaction-order-modern">
+                                        <div class="transaction-icon-modern">
+                                            <i class="fas fa-shopping-bag"></i>
+                                        </div>
+                                        <div>
+                                            <div class="transaction-number-modern">#@transaction.Id</div>
+                                            <small class="transaction-date-modern">
+                                                <i class="fas fa-calendar me-1"></i>@transaction.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="transaction-amount-modern">
+                                        <strong>R @transaction.TotalAmount.ToString("N2")</strong>
+                                    </div>
+                                </div>
+                                <div class="transaction-body-modern">
+                                    <div class="transaction-buyer-modern">
+                                        <div class="buyer-avatar-small">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div class="buyer-name-small">@transaction.Buyer.FirstName @transaction.Buyer.LastName</div>
+                                            <div class="buyer-email-small">@transaction.Buyer.Email</div>
+                                        </div>
+                                    </div>
+                                    <div class="transaction-status-modern">
+                                        <span class="badge-modern badge-success">Delivered</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No transactions yet</p>
+                        <p class="text-muted small">Transactions will appear here once orders are delivered.</p>
+                    </div>
+                }
             </div>
         </div>
 
-        <!-- Payout Information -->
+        <!-- Payout Information & Earnings Overview -->
         <div class="col-lg-4 mb-4">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-credit-card me-2"></i>Payout Information
-                    </h6>
-                </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(Model.Farmer.BankName) && !string.IsNullOrEmpty(Model.Farmer.BankAccountNumber))
-                    {
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Bank Account:</label>
-                            <div class="text-muted">
-                                <div>@Model.Farmer.BankName</div>
-                                <div>Account: ****@Model.Farmer.BankAccountNumber.Substring(Math.Max(0, Model.Farmer.BankAccountNumber.Length - 4))</div>
+            <!-- Payout Information -->
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%; text-align: left; margin-bottom: 2rem;">
+                <h5 class="service-card-title">
+                    <i class="fas fa-credit-card me-2"></i>Payout Information
+                </h5>
+                @if (!string.IsNullOrEmpty(Model.Farmer.BankName) && !string.IsNullOrEmpty(Model.Farmer.BankAccountNumber))
+                {
+                    <div class="payout-info-modern">
+                        <div class="payout-bank-modern">
+                            <label class="payout-label">Bank Account:</label>
+                            <div class="payout-details">
+                                <div class="payout-bank-name">@Model.Farmer.BankName</div>
+                                <div class="payout-account-number">Account: ****@Model.Farmer.BankAccountNumber.Substring(Math.Max(0, Model.Farmer.BankAccountNumber.Length - 4))</div>
                             </div>
                         </div>
                         
-                        <div class="alert alert-info">
+                        <div class="payout-alert-info">
                             <i class="fas fa-info-circle me-2"></i>
                             <strong>Payout Schedule:</strong> Earnings are automatically transferred to your bank account every Friday.
                         </div>
                         
                         @if (Model.PendingEarnings > 0)
                         {
-                            <div class="alert alert-warning">
+                            <div class="payout-alert-warning">
                                 <i class="fas fa-clock me-2"></i>
                                 <strong>Pending:</strong> R @Model.PendingEarnings.ToString("N2") will be paid out once orders are delivered.
                             </div>
                         }
                         
-                        <div class="d-grid">
+                        <div class="d-grid mt-3">
                             <a asp-action="ProfileSettings" class="btn btn-outline-primary">
                                 <i class="fas fa-edit me-2"></i>Update Bank Details
                             </a>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Bank Details Required:</strong> Please add your bank account information to receive payouts.
-                        </div>
-                        
-                        <div class="d-grid">
-                            <a asp-action="ProfileSettings" class="btn btn-success">
-                                <i class="fas fa-plus me-2"></i>Add Bank Details
-                            </a>
-                        </div>
-                    }
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="payout-alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Bank Details Required:</strong> Please add your bank account information to receive payouts.
+                    </div>
+                    
+                    <div class="d-grid mt-3">
+                        <a asp-action="ProfileSettings" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add Bank Details
+                        </a>
+                    </div>
+                }
             </div>
 
-            <!-- Earnings Chart Placeholder -->
-            <div class="card shadow mt-4">
-                <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-chart-bar me-2"></i>Earnings Overview
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-4">
-                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Earnings chart will be available soon</p>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="border-end">
-                                    <div class="h5 text-success">@Model.TotalEarnings.ToString("N0")</div>
-                                    <small class="text-muted">Total</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="h5 text-warning">@Model.MonthlyEarnings.ToString("N0")</div>
-                                <small class="text-muted">This Month</small>
-                            </div>
-                        </div>
+            <!-- Earnings Overview -->
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%; text-align: left;">
+                <h5 class="service-card-title">
+                    <i class="fas fa-chart-bar me-2"></i>Earnings Overview
+                </h5>
+                <div class="earnings-overview-modern">
+                    <div class="earnings-stat-modern">
+                        <div class="earnings-stat-value earnings-total">R @Model.TotalEarnings.ToString("N0")</div>
+                        <div class="earnings-stat-label">Total Earnings</div>
                     </div>
+                    <div class="earnings-stat-modern">
+                        <div class="earnings-stat-value earnings-monthly">R @Model.MonthlyEarnings.ToString("N0")</div>
+                        <div class="earnings-stat-label">This Month</div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                    <p class="text-muted small">Detailed earnings chart coming soon</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-bolt me-2"></i>Quick Actions
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="OrdersReceived" class="btn btn-primary w-100">
-                                <i class="fas fa-shopping-cart me-2"></i>View Orders
-                            </a>
+            <div class="service-card-small" style="max-width: 100%; flex: 0 0 100%;">
+                <h5 class="service-card-title">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+                <div class="services-cards-container" style="margin-top: 2rem;">
+                    <a asp-action="OrdersReceived" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="MyProducts" class="btn btn-success w-100">
-                                <i class="fas fa-boxes me-2"></i>Manage Products
-                            </a>
+                        <h5 class="service-card-title">View Orders</h5>
+                        <p class="service-card-text">Manage your orders</p>
+                    </a>
+                    <a asp-action="MyProducts" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-boxes"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="ProfileSettings" class="btn btn-warning w-100">
-                                <i class="fas fa-user-cog me-2"></i>Profile Settings
-                            </a>
+                        <h5 class="service-card-title">Manage Products</h5>
+                        <p class="service-card-text">Update your listings</p>
+                    </a>
+                    <a asp-action="ProfileSettings" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-user-cog"></i>
                         </div>
-                        <div class="col-md-3 mb-3">
-                            <a asp-action="Dashboard" class="btn btn-info w-100">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                            </a>
+                        <h5 class="service-card-title">Profile Settings</h5>
+                        <p class="service-card-text">Update your profile</p>
+                    </a>
+                    <a asp-action="Dashboard" class="service-card-small" style="text-decoration: none; cursor: pointer;">
+                        <div class="service-card-icon">
+                            <i class="fas fa-tachometer-alt"></i>
                         </div>
-                    </div>
+                        <h5 class="service-card-title">Dashboard</h5>
+                        <p class="service-card-text">View dashboard</p>
+                    </a>
                 </div>
             </div>
         </div>
@@ -268,27 +233,197 @@
 </div>
 
 <style>
-    .border-left-success {
-        border-left: 0.25rem solid #1cc88a !important;
+    .transactions-list-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
-    .border-left-warning {
-        border-left: 0.25rem solid #f6c23e !important;
+
+    .transaction-item-modern {
+        background: var(--accent-cream);
+        border-radius: var(--border-radius);
+        padding: 1.25rem;
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
     }
-    .border-left-info {
-        border-left: 0.25rem solid #36b9cc !important;
+
+    .transaction-item-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-green);
     }
-    .text-xs {
-        font-size: 0.7rem;
+
+    .transaction-header-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light);
     }
-    .text-gray-300 {
-        color: #dddfeb !important;
+
+    .transaction-order-modern {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
-    .text-gray-800 {
-        color: #5a5c69 !important;
+
+    .transaction-icon-modern {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary-green), #17A085);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
     }
-    .avatar-sm {
-        width: 32px;
-        height: 32px;
+
+    .transaction-number-modern {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-dark);
+    }
+
+    .transaction-date-modern {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .transaction-amount-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-green);
+    }
+
+    .transaction-body-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .transaction-buyer-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .buyer-avatar-small {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3498DB, #2980B9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+    }
+
+    .buyer-name-small {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .buyer-email-small {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .transaction-status-modern {
+        display: flex;
+        align-items: center;
+    }
+
+    .payout-info-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .payout-bank-modern {
+        padding: 1rem;
+        background: var(--accent-cream);
+        border-radius: var(--border-radius);
+    }
+
+    .payout-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .payout-details {
+        color: var(--text-dark);
+    }
+
+    .payout-bank-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .payout-account-number {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .payout-alert-info {
+        padding: 0.75rem 1rem;
+        background: #D1ECF1;
+        color: #0C5460;
+        border-radius: var(--border-radius);
+        font-size: 0.9rem;
+        border-left: 4px solid #3498DB;
+    }
+
+    .payout-alert-warning {
+        padding: 0.75rem 1rem;
+        background: #FFF3CD;
+        color: #856404;
+        border-radius: var(--border-radius);
+        font-size: 0.9rem;
+        border-left: 4px solid #F39C12;
+    }
+
+    .earnings-overview-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(31, 170, 89, 0.1), rgba(23, 160, 133, 0.1));
+        border-radius: var(--border-radius);
+    }
+
+    .earnings-stat-modern {
+        text-align: center;
+        padding: 1rem;
+        background: var(--accent-white);
+        border-radius: var(--border-radius);
+    }
+
+    .earnings-stat-value {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .earnings-total {
+        color: var(--primary-green);
+    }
+
+    .earnings-monthly {
+        color: #3498DB;
+    }
+
+    .earnings-stat-label {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-weight: 500;
     }
 </style>
-

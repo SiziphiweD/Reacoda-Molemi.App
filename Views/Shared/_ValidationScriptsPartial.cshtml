@@ -1,23 +1,24 @@
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('form').on('submit', function(e) {
-            var isValid = true;
-            var form = $(this);
-            
-            form.find('input[required]').each(function() {
-                if ($(this).val() === '') {
-                    isValid = false;
-                    $(this).addClass('is-invalid');
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
+    // Vanilla JavaScript validation - no jQuery dependency
+    // ONLY validate, don't prevent submission - let server handle it
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(function(form) {
+            // Only add visual feedback, don't prevent submission
+            form.addEventListener('submit', function(e) {
+                const requiredInputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+                
+                requiredInputs.forEach(function(input) {
+                    if (!input.value || input.value.trim() === '') {
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                
+                // Let the form submit - server will handle validation
+                // Don't prevent default
             });
-            
-            if (!isValid) {
-                e.preventDefault();
-                return false;
-            }
         });
     });
 </script>

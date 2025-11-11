@@ -1,4 +1,5 @@
 @model ProductDetailsViewModel
+@inject ReacodeApp.Services.ISessionService SessionService
 @{
     ViewData["Title"] = Model.Product.Name;
 }
@@ -155,9 +156,6 @@
                                             <div class="h5 mb-2">Total: R <span id="totalPrice">@Model.Product.PricePerKg.ToString("N2")</span></div>
                                             <button class="btn btn-light btn-lg w-100 add-to-cart" data-product-id="@Model.Product.Id">
                                                 <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                                            </button>
-                                            <button class="btn btn-primary btn-lg w-100 mt-2 buy-now" data-product-id="@Model.Product.Id">
-                                                <i class="fas fa-bolt me-2"></i>Buy Now
                                             </button>
                                         </div>
                                     </div>
@@ -331,16 +329,7 @@
             });
         });
 
-        // Buy now functionality
-        const buyNowButtons = document.querySelectorAll('.buy-now');
-        
-        buyNowButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const productId = this.dataset.productId;
-                const quantity = productId == @Model.Product.Id ? parseInt(quantityInput.value) : 1;
-                buyNow(productId, quantity);
-            });
-        });
+        // Buy now functionality removed - using Add to Cart only
 
         // Favorite functionality
         const favoriteButtons = document.querySelectorAll('.favorite-btn');
@@ -402,43 +391,38 @@
         totalPriceSpan.textContent = total.toFixed(2);
     }
 
-    function buyNow(productId, quantity) {
-        const formData = new FormData();
-        formData.append('productId', productId);
-        formData.append('quantity', quantity);
-        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-        
-        fetch('@Url.Action("AddToCart", "Buyer")', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Redirect to checkout page
-                window.location.href = '@Url.Action("Checkout", "Buyer")';
-            } else {
-                showToast(data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Error processing buy now', 'error');
-        });
-    }
+    // Buy Now function removed - using Add to Cart only
 
     function addToCart(productId, quantity) {
         console.log('Product Details - Adding to cart:', productId, quantity);
         
+        // Check if user is logged in - if not, redirect to registration
+        @if (!SessionService.IsLoggedIn())
+        {
+            <text>
+            const returnUrl = encodeURIComponent(window.location.href);
+            window.location.href = '@Url.Action("Register", "Auth")?returnUrl=' + returnUrl;
+            return;
+            </text>
+        }
+        
         const formData = new FormData();
         formData.append('productId', productId);
         formData.append('quantity', quantity);
-        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+        
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+        const headers = {};
+        if (token) {
+            headers['RequestVerificationToken'] = token;
+            formData.append('__RequestVerificationToken', token);
+        }
         
         console.log('Product Details - FormData created, sending request...');
         
         fetch('@Url.Action("AddToCart", "Buyer")', {
             method: 'POST',
+            headers: headers,
             body: formData
         })
         .then(response => {
@@ -460,11 +444,27 @@
         });
     }
 
+    function fetchCartCount() {
+        fetch('@Url.Action("GetCartCount", "Buyer")')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.count !== undefined) {
+                    updateCartCount(data.count);
+                }
+            })
+            .catch(error => console.error('Error fetching cart count:', error));
+    }
+
     function toggleFavorite(productId, button) {
         const isFavorited = button.classList.contains('favorited');
         
         const action = isFavorited ? "RemoveFromFavorites" : "AddToFavorites";
-        fetch(`@Url.Action("AddToFavorites", "Buyer").Replace("AddToFavorites", "${action}")`, {
+        @{
+            var addToFavoritesUrl = Url.Action("AddToFavorites", "Buyer") ?? "";
+        }
+        const baseUrl = '@Html.Raw(addToFavoritesUrl)';
+        const url = baseUrl.replace("AddToFavorites", action);
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

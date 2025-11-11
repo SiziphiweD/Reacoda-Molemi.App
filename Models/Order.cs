@@ -32,9 +32,23 @@ namespace ReacodeApp.Models
         
         public DateTime? ShippedDate { get; set; }
         
-        public DateTime? DeliveredDate { get; set; }
+        public DateTime? ArrivedDate { get; set; }  // When farmer arrives at delivery location
+        
+        public DateTime? DeliveredDate { get; set; }  // When buyer confirms delivery
         
         public string? TrackingNumber { get; set; }
+        
+        // Whether buyer has confirmed delivery
+        public bool IsDeliveryConfirmed { get; set; } = false;
+        
+        // Deadline for farmer to accept/reject (30 minutes from creation)
+        public DateTime? ResponseDeadline { get; set; }
+        
+        // Rejection reason if order is rejected
+        public string? RejectionReason { get; set; }
+        
+        // Estimated delivery date
+        public DateTime? EstimatedDeliveryDate { get; set; }
         
         // Foreign Keys
         public int BuyerId { get; set; }
@@ -52,7 +66,8 @@ namespace ReacodeApp.Models
         Accepted,
         Rejected,
         Shipped,
-        Delivered,
+        Arrived,  // Farmer has arrived at delivery location
+        Delivered,  // Buyer has confirmed delivery
         Cancelled
     }
     
@@ -61,6 +76,7 @@ namespace ReacodeApp.Models
         CashOnDelivery,
         CreditCard,
         BankTransfer,
-        Wallet
+        Wallet,
+        Stripe
     }
 }

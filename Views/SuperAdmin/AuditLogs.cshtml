@@ -35,11 +35,14 @@
                             <label for="userId" class="form-label">User</label>
                             <select class="form-select" id="userId" name="userId">
                                 <option value="all">All Users</option>
-                                @foreach (var user in ViewBag.Users as List<User>)
+                                @if (ViewBag.Users is List<User> users)
                                 {
-                                    <option value="@user.Id" selected="@(ViewBag.SelectedUserId?.ToString() == user.Id.ToString())">
-                                        @user.FirstName @user.LastName (@user.Email)
-                                    </option>
+                                    @foreach (var user in users)
+                                    {
+                                        <option value="@user.Id" selected="@(ViewBag.SelectedUserId?.ToString() == user.Id.ToString())">
+                                            @user.FirstName @user.LastName (@user.Email)
+                                        </option>
+                                    }
                                 }
                             </select>
                         </div>

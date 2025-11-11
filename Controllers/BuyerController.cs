@@ -82,6 +82,13 @@ namespace ReacodeApp.Controllers
                 .Take(6)
                 .ToListAsync();
 
+            // Get recent notifications
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == buyerId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
             var viewModel = new BuyerDashboardViewModel
             {
                 Buyer = user,
@@ -91,7 +98,8 @@ namespace ReacodeApp.Controllers
                 TotalSpent = totalSpent,
                 RecentOrders = recentOrders,
                 FavoriteProducts = favoriteProducts,
-                SuggestedProducts = suggestedProducts
+                SuggestedProducts = suggestedProducts,
+                Notifications = notifications
             };
 
             return View(viewModel);
@@ -213,53 +221,62 @@ namespace ReacodeApp.Controllers
                 return Json(new { success = false, message = "Invalid quantity" });
             }
 
-            // Get cart from session
-            var cart = GetCartFromSession();
+            // Save to database for logged-in users
+            var existingCartItem = await _context.Carts
+                .FirstOrDefaultAsync(c => c.UserId == user.Id && c.ProductId == productId);
             
-            // Check if item already exists in cart
-            var existingItem = cart.FirstOrDefault(item => item.ProductId == productId);
-            if (existingItem != null)
+            if (existingCartItem != null)
             {
-                existingItem.Quantity += quantity;
+                existingCartItem.Quantity += quantity;
+                existingCartItem.UpdatedAt = DateTime.UtcNow;
             }
             else
             {
-                cart.Add(new CartItem
+                var cartItem = new Cart
                 {
+                    UserId = user.Id,
                     ProductId = productId,
-                    ProductName = product.Name,
-                    Price = product.PricePerKg,
                     Quantity = quantity,
-                    ImageUrl = product.ImageUrl
-                });
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+                _context.Carts.Add(cartItem);
             }
+            
+            await _context.SaveChangesAsync();
 
-            // Save cart to session
+            // Also update session cart for consistency
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             SaveCartToSession(cart);
 
-            // Debug logging
-            System.Diagnostics.Debug.WriteLine($"Cart saved with {cart.Count} items, total quantity: {cart.Sum(item => item.Quantity)}");
-
-            return Json(new { success = true, message = "Added to cart", cartCount = cart.Sum(item => item.Quantity) });
+            var cartCount = cart.Sum(item => item.Quantity);
+            return Json(new { success = true, message = "Added to cart", cartCount = cartCount });
         }
 
         // Get Cart Count
         [HttpGet]
-        public IActionResult GetCartCount()
+        public async Task<IActionResult> GetCartCount()
         {
             if (!_sessionService.IsLoggedIn())
             {
                 return Json(new { success = false, count = 0 });
             }
 
-            var cart = GetCartFromSession();
+            var user = _sessionService.GetUser();
+            if (user == null)
+            {
+                return Json(new { success = false, count = 0 });
+            }
+
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             var count = cart.Sum(item => item.Quantity);
             
             return Json(new { success = true, count = count });
         }
 
         // Cart Page
-        public IActionResult Cart()
+        public async Task<IActionResult> Cart()
         {
             if (!_sessionService.IsLoggedIn())
             {
@@ -272,14 +289,11 @@ namespace ReacodeApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var cart = GetCartFromSession();
+            // Load cart from database for logged-in users
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             
-            // Debug logging
-            System.Diagnostics.Debug.WriteLine($"Cart retrieved with {cart.Count} items");
-            foreach (var item in cart)
-            {
-                System.Diagnostics.Debug.WriteLine($"Item: {item.ProductName}, Quantity: {item.Quantity}, Price: {item.Price}");
-            }
+            // Update session cart for consistency
+            SaveCartToSession(cart);
             
             return View(cart);
         }
@@ -294,17 +308,23 @@ namespace ReacodeApp.Controllers
                 return Json(new { success = false, message = "Please login" });
             }
 
-            var cart = GetCartFromSession();
-            var item = cart.FirstOrDefault(i => i.ProductId == productId);
+            var user = _sessionService.GetUser();
+            if (user == null)
+            {
+                return Json(new { success = false, message = "User not found" });
+            }
+
+            var cartItem = await _context.Carts
+                .FirstOrDefaultAsync(c => c.UserId == user.Id && c.ProductId == productId);
             
-            if (item == null)
+            if (cartItem == null)
             {
                 return Json(new { success = false, message = "Item not found in cart" });
             }
 
             if (quantity <= 0)
             {
-                cart.Remove(item);
+                _context.Carts.Remove(cartItem);
             }
             else
             {
@@ -315,37 +335,53 @@ namespace ReacodeApp.Controllers
                     return Json(new { success = false, message = "Invalid quantity" });
                 }
                 
-                item.Quantity = quantity;
+                cartItem.Quantity = quantity;
+                cartItem.UpdatedAt = DateTime.UtcNow;
             }
 
+            await _context.SaveChangesAsync();
+
+            // Update session cart
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             SaveCartToSession(cart);
+
             return Json(new { success = true, cartCount = cart.Sum(item => item.Quantity), total = cart.Sum(item => item.TotalPrice) });
         }
 
         // Remove from Cart
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RemoveFromCart(int productId)
+        public async Task<IActionResult> RemoveFromCart(int productId)
         {
             if (!_sessionService.IsLoggedIn())
             {
                 return Json(new { success = false, message = "Please login" });
             }
 
-            var cart = GetCartFromSession();
-            var item = cart.FirstOrDefault(i => i.ProductId == productId);
-            
-            if (item != null)
+            var user = _sessionService.GetUser();
+            if (user == null)
             {
-                cart.Remove(item);
-                SaveCartToSession(cart);
+                return Json(new { success = false, message = "User not found" });
             }
+
+            var cartItem = await _context.Carts
+                .FirstOrDefaultAsync(c => c.UserId == user.Id && c.ProductId == productId);
+            
+            if (cartItem != null)
+            {
+                _context.Carts.Remove(cartItem);
+                await _context.SaveChangesAsync();
+            }
+
+            // Update session cart
+            var cart = await GetCartFromDatabaseAsync(user.Id);
+            SaveCartToSession(cart);
 
             return Json(new { success = true, cartCount = cart.Sum(item => item.Quantity), total = cart.Sum(item => item.TotalPrice) });
         }
 
         // Checkout Page
-        public IActionResult Checkout()
+        public async Task<IActionResult> Checkout()
         {
             if (!_sessionService.IsLoggedIn())
             {
@@ -358,7 +394,7 @@ namespace ReacodeApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var cart = GetCartFromSession();
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             if (!cart.Any())
             {
                 return RedirectToAction("Cart");
@@ -381,7 +417,7 @@ namespace ReacodeApp.Controllers
         // Process Checkout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessCheckout(CheckoutViewModel model)
+        public async Task<IActionResult> ProcessCheckout([Bind("DeliveryAddress,DeliveryCity,DeliveryProvince,DeliveryPostalCode,DeliveryNotes,PaymentMethod,CardNumber,CardHolderName,CardExpiryMonth,CardExpiryYear,CardCVV,BankName,AccountNumber,AccountHolderName,ReferenceNumber,WalletType,WalletPhoneNumber,WalletPIN")] CheckoutViewModel model)
         {
             if (!_sessionService.IsLoggedIn())
             {
@@ -394,16 +430,79 @@ namespace ReacodeApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var cart = GetCartFromSession();
+            var cart = await GetCartFromDatabaseAsync(user.Id);
             if (!cart.Any())
             {
+                TempData["Error"] = "Your cart is empty. Please add items before placing an order.";
                 return RedirectToAction("Cart");
             }
 
-            if (!ModelState.IsValid)
+            // Validate required fields - check if model is null or fields are empty
+            if (model == null)
             {
+                TempData["Error"] = "Invalid form data. Please try again.";
+                return RedirectToAction("Checkout");
+            }
+
+            bool hasErrors = false;
+            if (string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            {
+                ModelState.AddModelError("DeliveryAddress", "Delivery address is required");
+                hasErrors = true;
+            }
+            if (string.IsNullOrWhiteSpace(model.DeliveryCity))
+            {
+                ModelState.AddModelError("DeliveryCity", "City is required");
+                hasErrors = true;
+            }
+            if (string.IsNullOrWhiteSpace(model.DeliveryProvince))
+            {
+                ModelState.AddModelError("DeliveryProvince", "Province is required");
+                hasErrors = true;
+            }
+            if (string.IsNullOrWhiteSpace(model.DeliveryPostalCode))
+            {
+                ModelState.AddModelError("DeliveryPostalCode", "Postal code is required");
+                hasErrors = true;
+            }
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(model.DeliveryPostalCode, @"^\d{4}$"))
+            {
+                ModelState.AddModelError("DeliveryPostalCode", "Postal code must be exactly 4 digits");
+                hasErrors = true;
+            }
+
+            // Clear any validation errors for Buyer object (we don't bind it from form)
+            ModelState.Remove("Buyer");
+            ModelState.Remove("Buyer.Email");
+            ModelState.Remove("Buyer.PasswordHash");
+            ModelState.Remove("Buyer.FirstName");
+            ModelState.Remove("Buyer.LastName");
+            ModelState.Remove("CartItems");
+            ModelState.Remove("TotalAmount");
+
+            // If validation fails, return to Checkout view with model to preserve input
+            if (hasErrors || !ModelState.IsValid)
+            {
+                // Repopulate cart items for the view
+                var cartItems = new List<CartItem>();
+                foreach (var item in cart)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        cartItems.Add(new CartItem
+                        {
+                            ProductId = item.ProductId,
+                            ProductName = product.Name,
+                            Quantity = item.Quantity,
+                            Price = item.Price,
+                            ImageUrl = product.ImageUrl
+                        });
+                    }
+                }
+                
                 model.Buyer = user;
-                model.CartItems = cart;
+                model.CartItems = cartItems;
                 return View("Checkout", model);
             }
 
@@ -418,6 +517,7 @@ namespace ReacodeApp.Controllers
             }
 
             // Create order
+            var orderCreatedAt = DateTime.UtcNow;
             var order = new Order
             {
                 OrderNumber = GenerateOrderNumber(),
@@ -431,8 +531,9 @@ namespace ReacodeApp.Controllers
                 DeliveryPostalCode = model.DeliveryPostalCode,
                 DeliveryNotes = model.DeliveryNotes,
                 PaymentMethod = model.PaymentMethod,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                ResponseDeadline = orderCreatedAt.AddMinutes(30), // 30 minutes deadline
+                CreatedAt = orderCreatedAt,
+                UpdatedAt = orderCreatedAt
             };
 
             _context.Orders.Add(order);
@@ -468,24 +569,40 @@ namespace ReacodeApp.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Clear cart
-            ClearCart();
+            // Clear cart from database
+            await ClearCartAsync(user.Id);
+
+            // Get product names for notification
+            var productNames = string.Join(", ", cart.Select(c => 
+            {
+                var product = _context.Products.Find(c.ProductId);
+                return product?.Name ?? "Product";
+            }).Take(3));
+            
+            if (cart.Count > 3)
+            {
+                productNames += $" and {cart.Count - 3} more";
+            }
 
             // Create notification for farmer
+            var deadlineTime = order.ResponseDeadline?.ToString("HH:mm") ?? "30 minutes";
             var notification = new Notification
             {
                 UserId = order.FarmerId,
-                Title = "New Order Received",
-                Message = $"You have received a new order #{order.Id} from {user.FirstName} {user.LastName}.",
+                Title = "New Order Received - Action Required",
+                Message = $"You have received a new order #{order.OrderNumber} from {user.FirstName} {user.LastName} for {productNames}. Total: R{order.TotalAmount:N2}. Please accept or reject within 30 minutes (deadline: {deadlineTime} UTC).",
                 Type = NotificationType.Order,
                 IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
                 CreatedAt = DateTime.UtcNow
             };
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("OrderConfirmation", new { id = order.Id });
+            TempData["Success"] = $"Order #{order.OrderNumber} placed successfully! The farmer will review and respond within 30 minutes.";
+            return RedirectToAction("OrdersHistory");
         }
 
         // Order Confirmation
@@ -505,7 +622,8 @@ namespace ReacodeApp.Controllers
             var order = await _context.Orders
                 .Include(o => o.Farmer)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(o => o.Id == id && o.BuyerId == user.Id);
 
             if (order == null)
@@ -513,7 +631,144 @@ namespace ReacodeApp.Controllers
                 return NotFound();
             }
 
+            // Ensure OrderItems is initialized
+            if (order.OrderItems == null)
+            {
+                order.OrderItems = new List<OrderItem>();
+            }
+
             return View(order);
+        }
+
+        // Confirm Delivery - Show form with rating
+        [HttpGet]
+        public async Task<IActionResult> ConfirmDelivery(int id)
+        {
+            if (!_sessionService.IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var user = _sessionService.GetUser();
+            if (user == null || user.Role != UserRole.Buyer)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Farmer)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o => o.Id == id && o.BuyerId == user.Id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.Status != OrderStatus.Arrived)
+            {
+                TempData["Error"] = "This order is not ready for delivery confirmation.";
+                return RedirectToAction("OrdersHistory");
+            }
+
+            // Check if already rated
+            var existingRating = await _context.FarmerRatings
+                .FirstOrDefaultAsync(r => r.OrderId == order.Id && r.BuyerId == user.Id);
+
+            ViewBag.HasRated = existingRating != null;
+            ViewBag.ExistingRating = existingRating;
+
+            return View(order);
+        }
+
+        // Confirm Delivery - Process confirmation and rating
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmDelivery(int id, int rating, string? comment)
+        {
+            if (!_sessionService.IsLoggedIn())
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var user = _sessionService.GetUser();
+            if (user == null || user.Role != UserRole.Buyer)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Farmer)
+                .FirstOrDefaultAsync(o => o.Id == id && o.BuyerId == user.Id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            if (order.Status != OrderStatus.Arrived)
+            {
+                TempData["Error"] = "This order is not ready for delivery confirmation.";
+                return RedirectToAction("OrdersHistory");
+            }
+
+            // Validate rating
+            if (rating < 1 || rating > 5)
+            {
+                TempData["Error"] = "Please provide a valid rating (1-5 stars).";
+                return RedirectToAction("ConfirmDelivery", new { id });
+            }
+
+            // Update order status
+            order.Status = OrderStatus.Delivered;
+            order.DeliveredDate = DateTime.UtcNow;
+            order.IsDeliveryConfirmed = true;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            // Save or update farmer rating
+            var existingRating = await _context.FarmerRatings
+                .FirstOrDefaultAsync(r => r.OrderId == order.Id && r.BuyerId == user.Id);
+
+            if (existingRating != null)
+            {
+                existingRating.Rating = rating;
+                existingRating.Comment = comment;
+                existingRating.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                var farmerRating = new FarmerRating
+                {
+                    FarmerId = order.FarmerId,
+                    BuyerId = user.Id,
+                    OrderId = order.Id,
+                    Rating = rating,
+                    Comment = comment,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.FarmerRatings.Add(farmerRating);
+            }
+
+            // Create notification for farmer
+            var notification = new Notification
+            {
+                UserId = order.FarmerId,
+                Title = "Order Delivered",
+                Message = $"Order #{order.OrderNumber} has been confirmed as delivered by the buyer. Rating: {rating}/5 stars.",
+                Type = NotificationType.Order,
+                IsRead = false,
+                RelatedEntityId = order.Id,
+                RelatedEntityType = "Order",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Delivery confirmed successfully! Thank you for your rating.";
+            return RedirectToAction("OrdersHistory");
         }
 
         // Orders History
@@ -929,6 +1184,23 @@ namespace ReacodeApp.Controllers
         }
 
         // Helper Methods
+        private async Task<List<CartItem>> GetCartFromDatabaseAsync(int userId)
+        {
+            var cartItems = await _context.Carts
+                .Include(c => c.Product)
+                .Where(c => c.UserId == userId && c.IsActive)
+                .ToListAsync();
+
+            return cartItems.Select(c => new CartItem
+            {
+                ProductId = c.ProductId,
+                ProductName = c.Product.Name,
+                Price = c.Product.PricePerKg,
+                Quantity = c.Quantity,
+                ImageUrl = c.Product.ImageUrl
+            }).ToList();
+        }
+
         private List<CartItem> GetCartFromSession()
         {
             var cartJson = HttpContext.Session.GetString("Cart");
@@ -941,8 +1213,15 @@ namespace ReacodeApp.Controllers
             HttpContext.Session.SetString("Cart", cartJson);
         }
 
-        private void ClearCart()
+        private async Task ClearCartAsync(int userId)
         {
+            var cartItems = await _context.Carts
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+            
+            _context.Carts.RemoveRange(cartItems);
+            await _context.SaveChangesAsync();
+            
             HttpContext.Session.Remove("Cart");
         }
 

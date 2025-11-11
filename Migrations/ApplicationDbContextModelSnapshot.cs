@@ -22,6 +22,42 @@ namespace ReacodeApp.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ReacodeApp.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("Carts");
+                });
+
             modelBuilder.Entity("ReacodeApp.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -59,7 +95,7 @@ namespace ReacodeApp.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8383),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6286),
                             Description = "Fresh vegetables",
                             IsActive = true,
                             Name = "Vegetables"
@@ -67,7 +103,7 @@ namespace ReacodeApp.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8389),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6294),
                             Description = "Fresh fruits",
                             IsActive = true,
                             Name = "Fruits"
@@ -75,7 +111,7 @@ namespace ReacodeApp.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8391),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6296),
                             Description = "Cereals and grains",
                             IsActive = true,
                             Name = "Grains"
@@ -83,7 +119,7 @@ namespace ReacodeApp.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8393),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6298),
                             Description = "Fresh herbs and spices",
                             IsActive = true,
                             Name = "Herbs"
@@ -91,11 +127,56 @@ namespace ReacodeApp.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8394),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6300),
                             Description = "Dairy products",
                             IsActive = true,
                             Name = "Dairy"
                         });
+                });
+
+            modelBuilder.Entity("ReacodeApp.Models.FarmerRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FarmerId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("FarmerId");
+
+                    b.HasIndex("OrderId", "BuyerId")
+                        .IsUnique();
+
+                    b.ToTable("FarmerRatings");
                 });
 
             modelBuilder.Entity("ReacodeApp.Models.Favorite", b =>
@@ -156,6 +237,12 @@ namespace ReacodeApp.Migrations
                     b.Property<DateTime?>("ReadAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("RelatedEntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasColumnType("text");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -185,6 +272,9 @@ namespace ReacodeApp.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ArrivedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("BuyerId")
                         .HasColumnType("integer");
 
@@ -209,10 +299,16 @@ namespace ReacodeApp.Migrations
                     b.Property<string>("DeliveryProvince")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("FarmerId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeliveryConfirmed")
                         .HasColumnType("boolean");
 
                     b.Property<string>("OrderNumber")
@@ -225,6 +321,12 @@ namespace ReacodeApp.Migrations
 
                     b.Property<string>("PaymentReference")
                         .HasColumnType("text");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ResponseDeadline")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ShippedDate")
                         .HasColumnType("timestamp with time zone");
@@ -289,6 +391,59 @@ namespace ReacodeApp.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("ReacodeApp.Models.PaymentTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PaymentGateway")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("RawResponse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("ReacodeApp.Models.Product", b =>
@@ -362,11 +517,11 @@ namespace ReacodeApp.Migrations
                             Id = 1,
                             AvailableQuantity = 50,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8715),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6963),
                             Description = "Premium organic tomatoes grown in our greenhouse. Perfect for salads, cooking, and fresh eating.",
-                            ExpiryDate = new DateTime(2025, 10, 31, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8713),
+                            ExpiryDate = new DateTime(2025, 11, 15, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6962),
                             FarmerId = 10,
-                            HarvestDate = new DateTime(2025, 10, 24, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8707),
+                            HarvestDate = new DateTime(2025, 11, 8, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6955),
                             ImageUrl = "https://images.unsplash.com/photo-1546470427-5bb7c3a1b7b8?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -374,18 +529,18 @@ namespace ReacodeApp.Migrations
                             Name = "Fresh Organic Tomatoes",
                             PricePerKg = 45.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8716)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6964)
                         },
                         new
                         {
                             Id = 2,
                             AvailableQuantity = 30,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8723),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6972),
                             Description = "Fresh sweet corn harvested daily. Great for grilling, boiling, or adding to salads.",
-                            ExpiryDate = new DateTime(2025, 11, 2, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8722),
+                            ExpiryDate = new DateTime(2025, 11, 17, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6970),
                             FarmerId = 10,
-                            HarvestDate = new DateTime(2025, 10, 25, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8721),
+                            HarvestDate = new DateTime(2025, 11, 9, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6969),
                             ImageUrl = "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -393,18 +548,18 @@ namespace ReacodeApp.Migrations
                             Name = "Sweet Corn",
                             PricePerKg = 35.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8724)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6972)
                         },
                         new
                         {
                             Id = 3,
                             AvailableQuantity = 25,
                             CategoryId = 2,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8730),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6978),
                             Description = "Sweet, juicy strawberries perfect for desserts, smoothies, or eating fresh.",
-                            ExpiryDate = new DateTime(2025, 10, 29, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8729),
+                            ExpiryDate = new DateTime(2025, 11, 13, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6977),
                             FarmerId = 11,
-                            HarvestDate = new DateTime(2025, 10, 25, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8728),
+                            HarvestDate = new DateTime(2025, 11, 9, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6976),
                             ImageUrl = "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -412,18 +567,18 @@ namespace ReacodeApp.Migrations
                             Name = "Fresh Strawberries",
                             PricePerKg = 80.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8731)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6979)
                         },
                         new
                         {
                             Id = 4,
                             AvailableQuantity = 40,
                             CategoryId = 2,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8738),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7000),
                             Description = "Crisp, sweet organic apples from our orchard. Perfect for snacking or baking.",
-                            ExpiryDate = new DateTime(2025, 11, 9, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8736),
+                            ExpiryDate = new DateTime(2025, 11, 24, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6999),
                             FarmerId = 11,
-                            HarvestDate = new DateTime(2025, 10, 23, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8736),
+                            HarvestDate = new DateTime(2025, 11, 7, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6998),
                             ImageUrl = "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -431,18 +586,18 @@ namespace ReacodeApp.Migrations
                             Name = "Organic Apples",
                             PricePerKg = 55.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8738)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7001)
                         },
                         new
                         {
                             Id = 5,
                             AvailableQuantity = 15,
                             CategoryId = 4,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8744),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7007),
                             Description = "Aromatic fresh basil perfect for Italian dishes, pesto, and garnishing.",
-                            ExpiryDate = new DateTime(2025, 10, 31, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8743),
+                            ExpiryDate = new DateTime(2025, 11, 15, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7006),
                             FarmerId = 12,
-                            HarvestDate = new DateTime(2025, 10, 25, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8742),
+                            HarvestDate = new DateTime(2025, 11, 9, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7005),
                             ImageUrl = "https://images.unsplash.com/photo-1615485925442-7b4b8b5b5b5b?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -450,18 +605,18 @@ namespace ReacodeApp.Migrations
                             Name = "Fresh Basil",
                             PricePerKg = 120.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8744)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7008)
                         },
                         new
                         {
                             Id = 6,
                             AvailableQuantity = 20,
                             CategoryId = 4,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8750),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7015),
                             Description = "Fragrant rosemary perfect for roasting, grilling, and Mediterranean dishes.",
-                            ExpiryDate = new DateTime(2025, 11, 2, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8749),
+                            ExpiryDate = new DateTime(2025, 11, 17, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7013),
                             FarmerId = 12,
-                            HarvestDate = new DateTime(2025, 10, 24, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8748),
+                            HarvestDate = new DateTime(2025, 11, 8, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7012),
                             ImageUrl = "https://images.unsplash.com/photo-1615485925442-7b4b8b5b5b5b?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -469,18 +624,18 @@ namespace ReacodeApp.Migrations
                             Name = "Fresh Rosemary",
                             PricePerKg = 100.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8751)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7015)
                         },
                         new
                         {
                             Id = 7,
                             AvailableQuantity = 35,
                             CategoryId = 3,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8757),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7023),
                             Description = "Premium organic quinoa, high in protein and perfect for healthy meals.",
-                            ExpiryDate = new DateTime(2026, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8756),
+                            ExpiryDate = new DateTime(2026, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7021),
                             FarmerId = 10,
-                            HarvestDate = new DateTime(2025, 10, 21, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8755),
+                            HarvestDate = new DateTime(2025, 11, 5, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7020),
                             ImageUrl = "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -488,18 +643,18 @@ namespace ReacodeApp.Migrations
                             Name = "Organic Quinoa",
                             PricePerKg = 95.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8758)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7024)
                         },
                         new
                         {
                             Id = 8,
                             AvailableQuantity = 60,
                             CategoryId = 1,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8764),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7031),
                             Description = "Sweet, crunchy carrots perfect for snacking, cooking, or juicing.",
-                            ExpiryDate = new DateTime(2025, 11, 5, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8762),
+                            ExpiryDate = new DateTime(2025, 11, 20, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7029),
                             FarmerId = 11,
-                            HarvestDate = new DateTime(2025, 10, 24, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8761),
+                            HarvestDate = new DateTime(2025, 11, 8, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7028),
                             ImageUrl = "https://images.unsplash.com/photo-1598170845058-32b9d6a5da35?w=400&h=300&fit=crop",
                             IsActive = true,
                             IsAvailable = true,
@@ -507,7 +662,7 @@ namespace ReacodeApp.Migrations
                             Name = "Fresh Carrots",
                             PricePerKg = 25.00m,
                             Status = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8764)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7031)
                         });
                 });
 
@@ -623,7 +778,7 @@ namespace ReacodeApp.Migrations
                             Id = 10,
                             Address = "123 Farm Road",
                             City = "Cape Town",
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8638),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6858),
                             Email = "farmer1@example.com",
                             FirstName = "John",
                             IsActive = true,
@@ -634,14 +789,14 @@ namespace ReacodeApp.Migrations
                             PostalCode = "8000",
                             Province = "Western Cape",
                             Role = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8638)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6859)
                         },
                         new
                         {
                             Id = 11,
                             Address = "456 Harvest Lane",
                             City = "Johannesburg",
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8646),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6869),
                             Email = "farmer2@example.com",
                             FirstName = "Sarah",
                             IsActive = true,
@@ -652,14 +807,14 @@ namespace ReacodeApp.Migrations
                             PostalCode = "2000",
                             Province = "Gauteng",
                             Role = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8647)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6870)
                         },
                         new
                         {
                             Id = 12,
                             Address = "789 Green Valley",
                             City = "Durban",
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8652),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6875),
                             Email = "farmer3@example.com",
                             FirstName = "Mike",
                             IsActive = true,
@@ -670,12 +825,12 @@ namespace ReacodeApp.Migrations
                             PostalCode = "4000",
                             Province = "KwaZulu-Natal",
                             Role = 1,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8652)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(6876)
                         },
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8817),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7091),
                             Email = "admin@reacoda.com",
                             FirstName = "System",
                             IsActive = true,
@@ -683,12 +838,12 @@ namespace ReacodeApp.Migrations
                             LastName = "Admin",
                             PasswordHash = "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk=",
                             Role = 2,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8818)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7092)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8822),
+                            CreatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7096),
                             Email = "superadmin@reacoda.com",
                             FirstName = "Super",
                             IsActive = true,
@@ -696,8 +851,54 @@ namespace ReacodeApp.Migrations
                             LastName = "Admin",
                             PasswordHash = "40+SogUyqHPLMYQ5gHC0uCqPopz0hXLCA9xfD6YVgjE=",
                             Role = 3,
-                            UpdatedAt = new DateTime(2025, 10, 26, 12, 22, 26, 709, DateTimeKind.Utc).AddTicks(8822)
+                            UpdatedAt = new DateTime(2025, 11, 10, 11, 33, 48, 924, DateTimeKind.Utc).AddTicks(7097)
                         });
+                });
+
+            modelBuilder.Entity("ReacodeApp.Models.Cart", b =>
+                {
+                    b.HasOne("ReacodeApp.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ReacodeApp.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ReacodeApp.Models.FarmerRating", b =>
+                {
+                    b.HasOne("ReacodeApp.Models.User", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ReacodeApp.Models.User", "Farmer")
+                        .WithMany()
+                        .HasForeignKey("FarmerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ReacodeApp.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Farmer");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("ReacodeApp.Models.Favorite", b =>
@@ -766,6 +967,17 @@ namespace ReacodeApp.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("ReacodeApp.Models.PaymentTransaction", b =>
+                {
+                    b.HasOne("ReacodeApp.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("ReacodeApp.Models.Product", b =>

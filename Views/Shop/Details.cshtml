@@ -3,197 +3,353 @@
     ViewData["Title"] = Model.Name;
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6">
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <img src="@Model.ImageUrl" class="img-fluid rounded shadow" alt="@Model.Name" />
-            }
-            else
-            {
-                <div class="bg-light rounded shadow d-flex align-items-center justify-content-center" style="height: 400px;">
-                    <i class="fas fa-image text-muted" style="font-size: 4rem;"></i>
-                </div>
-            }
-        </div>
-        
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <h1 class="fw-bold mb-3">@Model.Name</h1>
-                    
-                    <div class="mb-3">
-                        <span class="badge badge-success fs-6">@Model.Category.Name</span>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h3 class="text-success fw-bold">R@Model.PricePerKg.ToString("F2") per kg</h3>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <h6 class="fw-bold">Description</h6>
-                        <p class="text-muted">@Model.Description</p>
-                    </div>
-                    
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-user text-success me-2"></i>
-                                <div>
-                                    <small class="text-muted">Farmer</small>
-                                    <div class="fw-bold">@Model.Farmer.FirstName @Model.Farmer.LastName</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-box text-success me-2"></i>
-                                <div>
-                                    <small class="text-muted">Available</small>
-                                    <div class="fw-bold">@Model.AvailableQuantity kg</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    @if (!string.IsNullOrEmpty(Model.Location))
+@Html.AntiForgeryToken()
+
+<div class="product-details-page-ecommerce">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Product Image Card (Left) - Small -->
+            <div class="col-lg-4 col-md-5">
+                <div class="product-image-card-small">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
                     {
-                        <div class="mb-4">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-map-marker-alt text-success me-2"></i>
-                                <div>
-                                    <small class="text-muted">Location</small>
-                                    <div class="fw-bold">@Model.Location</div>
-                                </div>
-                            </div>
+                        <img src="@Model.ImageUrl" class="product-image-small" alt="@Model.Name" />
+                    }
+                    else
+                    {
+                        <div class="product-image-placeholder-small">
+                            <i class="fas fa-image"></i>
                         </div>
                     }
-                    
-                    <div class="mb-4">
-                        <label for="quantity" class="form-label fw-bold">Quantity (kg)</label>
-                        <div class="input-group" style="max-width: 200px;">
-                            <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity()">-</button>
-                            <input type="number" id="quantity" class="form-control text-center" value="1" min="1" max="@Model.AvailableQuantity" />
-                            <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity()">+</button>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success btn-lg" onclick="addToCart(@Model.Id)">
-                            <i class="fas fa-cart-plus me-2"></i>Add to Cart
-                        </button>
-                        <button class="btn btn-outline-success btn-lg" onclick="buyNow(@Model.Id)">
-                            <i class="fas fa-bolt me-2"></i>Buy Now
-                        </button>
+                    <div class="category-badge-small">
+                        <span>@Model.Category.Name</span>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Reviews Section -->
-    @if (Model.Reviews.Any())
-    {
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="fw-bold mb-0">
-                            <i class="fas fa-star me-2"></i>Customer Reviews
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @foreach (var review in Model.Reviews)
-                        {
-                            <div class="border-bottom pb-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="fw-bold mb-1">@review.Buyer.FirstName @review.Buyer.LastName</h6>
-                                        <div class="mb-2">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                <i class="fas fa-star @(i <= review.Rating ? "text-warning" : "text-muted")"></i>
-                                            }
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
-                                </div>
-                                @if (!string.IsNullOrEmpty(review.Comment))
+            
+            <!-- Product Content Card (Right) -->
+            <div class="col-lg-8 col-md-7">
+                <div class="product-details-card-ecommerce">
+                    <!-- Product Header -->
+                    <div class="product-header-ecommerce">
+                        <h1 class="product-title-ecommerce">@Model.Name</h1>
+                        <div class="product-rating-ecommerce">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
                                 {
-                                    <p class="mb-0 text-muted">@review.Comment</p>
+                                    <i class="fas fa-star @(i <= 4 ? "filled" : "")"></i>
                                 }
+                            </div>
+                            <span class="rating-text">(4.5) 12 reviews</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Section -->
+                    <div class="product-price-section-ecommerce">
+                        <div class="price-main-ecommerce">
+                            <span class="price-currency-ecommerce">R</span>
+                            <span class="price-value-ecommerce">@Model.PricePerKg.ToString("F2")</span>
+                            <span class="price-unit-ecommerce">/kg</span>
+                        </div>
+                        <div class="price-total-ecommerce">
+                            <span class="total-label-ecommerce">Total:</span>
+                            <span class="total-value-ecommerce" id="totalPrice"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Info Grid -->
+                    <div class="product-info-grid-ecommerce">
+                        <div class="info-item-ecommerce">
+                            <div class="info-icon-ecommerce">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="info-content-ecommerce">
+                                <div class="info-label-ecommerce">Farmer</div>
+                                <div class="info-value-ecommerce">@Model.Farmer.FirstName @Model.Farmer.LastName</div>
+                            </div>
+                        </div>
+                        <div class="info-item-ecommerce">
+                            <div class="info-icon-ecommerce">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="info-content-ecommerce">
+                                <div class="info-label-ecommerce">Stock Available</div>
+                                <div class="info-value-ecommerce">@Model.AvailableQuantity kg</div>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="info-item-ecommerce">
+                                <div class="info-icon-ecommerce">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="info-content-ecommerce">
+                                    <div class="info-label-ecommerce">Location</div>
+                                    <div class="info-value-ecommerce">@Model.Location</div>
+                                </div>
                             </div>
                         }
                     </div>
+                    
+                    <!-- Description -->
+                    <div class="product-description-ecommerce">
+                        <h2 class="description-heading-ecommerce">Product Description</h2>
+                        <div class="description-content-ecommerce">
+                            <p>@Model.Description</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Purchase Section -->
+                    <div class="product-purchase-section-ecommerce">
+                        <div class="quantity-section-ecommerce">
+                            <label class="quantity-label-ecommerce">Quantity (kg)</label>
+                            <div class="quantity-control-ecommerce">
+                                <button class="qty-btn-ecommerce qty-decrease-ecommerce" type="button" onclick="decreaseQuantity()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="quantity" class="qty-input-ecommerce" value="1" min="1" max="@Model.AvailableQuantity" />
+                                <button class="qty-btn-ecommerce qty-increase-ecommerce" type="button" onclick="increaseQuantity()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="stock-info-ecommerce">
+                                <i class="fas fa-check-circle"></i>
+                                <span>@Model.AvailableQuantity kg in stock</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons-ecommerce">
+                            <button class="btn-add-cart-ecommerce" onclick="addToCart(@Model.Id, this)">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                        </div>
+                        
+                        <div class="product-features-ecommerce">
+                            <div class="feature-item-ecommerce">
+                                <i class="fas fa-truck"></i>
+                                <span>Free Delivery</span>
+                            </div>
+                            <div class="feature-item-ecommerce">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                            <div class="feature-item-ecommerce">
+                                <i class="fas fa-undo"></i>
+                                <span>Easy Returns</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    }
+        
+        <!-- Reviews Section -->
+        @if (Model.Reviews.Any())
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-star me-2"></i>Customer Reviews
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">@review.Buyer.FirstName @review.Buyer.LastName</h6>
+                                            <div class="mb-2">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="fas fa-star @(i <= review.Rating ? "text-warning" : "text-muted")"></i>
+                                                }
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(review.Comment))
+                                    {
+                                        <p class="mb-0 text-muted">@review.Comment</p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
 @section Scripts {
     <script>
+        const pricePerKg = @Model.PricePerKg;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.getElementById('quantity');
+            quantityInput.addEventListener('input', updateTotalPrice);
+            quantityInput.addEventListener('change', updateTotalPrice);
+            // Calculate initial total price
+            updateTotalPrice();
+        });
+        
+        function updateTotalPrice() {
+            const quantityInput = document.getElementById('quantity');
+            const totalPriceElement = document.getElementById('totalPrice');
+            const quantity = parseInt(quantityInput.value) || 1;
+            const total = pricePerKg * quantity;
+            if (totalPriceElement) {
+                totalPriceElement.textContent = 'R' + total.toFixed(2);
+            }
+        }
+        
         function increaseQuantity() {
             const quantityInput = document.getElementById('quantity');
             const maxQuantity = @Model.AvailableQuantity;
-            const currentValue = parseInt(quantityInput.value);
+            const currentValue = parseInt(quantityInput.value) || 1;
             if (currentValue < maxQuantity) {
                 quantityInput.value = currentValue + 1;
+                updateTotalPrice();
             }
         }
 
         function decreaseQuantity() {
             const quantityInput = document.getElementById('quantity');
-            const currentValue = parseInt(quantityInput.value);
+            const currentValue = parseInt(quantityInput.value) || 1;
             if (currentValue > 1) {
                 quantityInput.value = currentValue - 1;
+                updateTotalPrice();
             }
         }
 
-        function addToCart(productId) {
-            const quantity = document.getElementById('quantity').value;
-            fetch('@Url.Action("AddToCart", "Shop")', {
+        function addToCart(productId, buttonElement) {
+            const quantityInput = document.getElementById('quantity');
+            const quantity = quantityInput ? quantityInput.value : 1;
+            const button = buttonElement || document.querySelector('.btn-add-cart-ecommerce');
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('productId', productId);
+            formData.append('quantity', quantity);
+            
+            // Get anti-forgery token if available
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : '';
+            const headers = {};
+            if (token) {
+                headers['RequestVerificationToken'] = token;
+                formData.append('__RequestVerificationToken', token);
+            }
+            
+            // Show loading state
+            let originalHTML = '';
+            if (button) {
+                originalHTML = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Adding...</span>';
+            }
+            
+            // Use Buyer controller for logged-in users, Shop controller for guests
+            const isLoggedIn = @(Context.Session.GetString("CurrentUser") != null ? "true" : "false");
+            const addToCartUrl = isLoggedIn 
+                ? '@Url.Action("AddToCart", "Buyer")' 
+                : '@Url.Action("AddToCart", "Shop")';
+            
+            fetch(addToCartUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                },
-                body: JSON.stringify({ productId: productId, quantity: parseInt(quantity) })
+                headers: headers,
+                body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     showAlert('Product added to cart!', 'success');
+                    if (data.cartCount !== undefined) {
+                        updateCartCount(data.cartCount);
+                    }
                 } else {
-                    showAlert(data.message || 'Error adding product to cart', 'danger');
+                    // Check if user is not logged in
+                    const message = data.message || '';
+                    if (message.toLowerCase().includes('login') || message.toLowerCase().includes('not logged') || message.toLowerCase().includes('please login')) {
+                        sessionStorage.setItem('loginRequired', 'true');
+                        sessionStorage.setItem('loginMessage', 'You must be logged in to add items to cart or place orders. Please sign up or login to continue.');
+                        const returnUrl = encodeURIComponent(window.location.href);
+                        window.location.href = '@Url.Action("Register", "Auth")?returnUrl=' + returnUrl;
+                    } else {
+                        showAlert(data.message || 'Error adding product to cart', 'danger');
+                    }
                 }
             })
             .catch(error => {
-                showAlert('Error adding product to cart', 'danger');
+                console.error('Error:', error);
+                showAlert('Error adding product to cart. Please try again.', 'danger');
+            })
+            .finally(() => {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }
             });
         }
 
-        function buyNow(productId) {
-            const quantity = document.getElementById('quantity').value;
-            // Redirect to checkout with this product
-            window.location.href = '@Url.Action("Checkout", "Shop")' + '?productId=' + productId + '&quantity=' + quantity;
+        // Buy Now function removed - using Add to Cart only
+        
+        function updateCartCount(count) {
+            const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge, [data-cart-count]');
+            cartCountElements.forEach(element => {
+                element.textContent = count;
+                element.style.display = count > 0 ? 'inline-block' : 'none';
+            });
         }
+
+        // Load cart count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = @(Context.Session.GetString("CurrentUser") != null ? "true" : "false");
+            const cartCountUrl = isLoggedIn 
+                ? '@Url.Action("GetCartCount", "Buyer")' 
+                : '@Url.Action("GetCartCount", "Shop")';
+            
+            fetch(cartCountUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle both Shop and Buyer controller response formats
+                    const count = data.count !== undefined ? data.count : (data.success && data.count !== undefined ? data.count : 0);
+                    if (count !== undefined && count >= 0) {
+                        updateCartCount(count);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading cart count:', error);
+                });
+        });
 
         function showAlert(message, type) {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.top = '20px';
-            alertDiv.style.right = '20px';
-            alertDiv.style.zIndex = '9999';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
             alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             `;
             document.body.appendChild(alertDiv);
             
             setTimeout(() => {
-                alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 150);
+                }
             }, 3000);
         }
     </script>

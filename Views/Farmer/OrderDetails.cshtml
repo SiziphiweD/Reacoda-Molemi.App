@@ -36,6 +36,7 @@
                                         OrderStatus.Pending => "warning",
                                         OrderStatus.Accepted => "info",
                                         OrderStatus.Shipped => "primary",
+                                        OrderStatus.Arrived => "info",
                                         OrderStatus.Delivered => "success",
                                         OrderStatus.Cancelled => "danger",
                                         _ => "secondary"
@@ -57,13 +58,20 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Buyer Information:</label>
                                 <div>
-                                    <div class="fw-bold">@Model.Buyer.FirstName @Model.Buyer.LastName</div>
-                                    <div class="text-muted">@Model.Buyer.Email</div>
-                                    @if (!string.IsNullOrEmpty(Model.Buyer.PhoneNumber))
+                                    @if (Model.Buyer != null)
                                     {
-                                        <div class="text-muted">
-                                            <i class="fas fa-phone me-1"></i>@Model.Buyer.PhoneNumber
-                                        </div>
+                                        <div class="fw-bold">@Model.Buyer.FirstName @Model.Buyer.LastName</div>
+                                        <div class="text-muted">@Model.Buyer.Email</div>
+                                        @if (!string.IsNullOrEmpty(Model.Buyer.PhoneNumber))
+                                        {
+                                            <div class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>@Model.Buyer.PhoneNumber
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted">Buyer information not available</div>
                                     }
                                 </div>
                             </div>
@@ -76,7 +84,7 @@
             <div class="card shadow mt-4">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-boxes me-2"></i>Order Items (@Model.OrderItems.Count)
+                        <i class="fas fa-boxes me-2"></i>Order Items (@(Model.OrderItems?.Count ?? 0))
                     </h5>
                 </div>
                 <div class="card-body">
@@ -91,24 +99,53 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model.OrderItems)
+                                @if (Model.OrderItems != null && Model.OrderItems.Any())
+                                {
+                                    @foreach (var item in Model.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (item.Product != null)
+                                                    {
+                                                        @if (!string.IsNullOrEmpty(item.Product.ImageUrl))
+                                                        {
+                                                            <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
+                                                                 class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;"
+                                                                 onerror="this.src='/images/default-product.jpg'; this.onerror=null;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                                <i class="fas fa-image text-muted"></i>
+                                                            </div>
+                                                        }
+                                                        <div>
+                                                            <div class="fw-bold">@item.Product.Name</div>
+                                                            <small class="text-muted">@(item.Product.Category?.Name ?? "N/A")</small>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div>
+                                                            <div class="fw-bold text-muted">Product Not Found</div>
+                                                            <small class="text-muted">Product ID: @item.ProductId</small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@item.Quantity kg</span>
+                                            </td>
+                                            <td>R @item.UnitPrice.ToString("N2")</td>
+                                            <td class="fw-bold">R @item.TotalPrice.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
                                 {
                                     <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
-                                                     class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                                <div>
-                                                    <div class="fw-bold">@item.Product.Name</div>
-                                                    <small class="text-muted">@item.Product.Category.Name</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary">@item.Quantity kg</span>
-                                        </td>
-                                        <td>R @item.UnitPrice.ToString("N2")</td>
-                                        <td class="fw-bold">R @item.TotalPrice.ToString("N2")</td>
+                                        <td colspan="4" class="text-center text-muted">No items found in this order.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -171,9 +208,49 @@
                     }
                     else if (Model.Status == OrderStatus.Shipped)
                     {
-                        <div class="alert alert-primary">
+                        <div class="d-grid gap-2">
+                            <form asp-action="MarkAsArrived" asp-route-id="@Model.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-info w-100" 
+                                        onclick="return confirm('Mark as arrived at delivery location? This will notify the buyer.')">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Mark as Arrived
+                                </button>
+                            </form>
+                            @if (Model.Buyer != null)
+                            {
+                                <a href="tel:@Model.Buyer.PhoneNumber" class="btn btn-success w-100" title="Call Buyer">
+                                    <i class="fas fa-phone me-2"></i>Call Buyer
+                                </a>
+                                <a href="sms:@Model.Buyer.PhoneNumber" class="btn btn-primary w-100" title="Message Buyer">
+                                    <i class="fas fa-sms me-2"></i>Message Buyer
+                                </a>
+                            }
+                        </div>
+                        <div class="alert alert-primary mt-3">
                             <i class="fas fa-truck me-2"></i>
                             <strong>Shipped:</strong> This order is on its way to the buyer.
+                        </div>
+                    }
+                    else if (Model.Status == OrderStatus.Arrived)
+                    {
+                        @if (Model.Buyer != null)
+                        {
+                            <div class="d-grid gap-2">
+                                <a href="tel:@Model.Buyer.PhoneNumber" class="btn btn-success w-100" title="Call Buyer">
+                                    <i class="fas fa-phone me-2"></i>Call Buyer
+                                </a>
+                                <a href="sms:@Model.Buyer.PhoneNumber" class="btn btn-primary w-100" title="Message Buyer">
+                                    <i class="fas fa-sms me-2"></i>Message Buyer
+                                </a>
+                            </div>
+                        }
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <strong>Arrived:</strong> You have arrived at the delivery location. Waiting for buyer to confirm delivery.
+                            @if (Model.ArrivedDate.HasValue)
+                            {
+                                <br><small>Arrived at: @Model.ArrivedDate.Value.ToString("MMMM dd, yyyy HH:mm")</small>
+                            }
                         </div>
                     }
                     else if (Model.Status == OrderStatus.Delivered)
@@ -239,16 +316,46 @@
                                 <div class="timeline-content">
                                     <h6 class="timeline-title">Order Shipped</h6>
                                     <p class="timeline-text">Items are on their way</p>
+                                    @if (Model.ShippedDate.HasValue)
+                                    {
+                                        <p class="text-muted small">@Model.ShippedDate.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Model.TrackingNumber))
+                                    {
+                                        <p class="small"><strong>Tracking:</strong> @Model.TrackingNumber</p>
+                                    }
                                 </div>
                             </div>
                         }
-                        @if (Model.Status == OrderStatus.Delivered)
+                        @if (Model.Status >= OrderStatus.Arrived)
                         {
-                            <div class="timeline-item active">
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Arrived ? "active" : "")">
+                                <div class="timeline-marker bg-info"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Arrived</h6>
+                                    <p class="timeline-text">Waiting for buyer confirmation</p>
+                                    @if (Model.ArrivedDate.HasValue)
+                                    {
+                                        <p class="text-muted small">@Model.ArrivedDate.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status >= OrderStatus.Delivered)
+                        {
+                            <div class="timeline-item @(Model.Status >= OrderStatus.Delivered ? "active" : "")">
                                 <div class="timeline-marker bg-success"></div>
                                 <div class="timeline-content">
                                     <h6 class="timeline-title">Order Delivered</h6>
                                     <p class="timeline-text">Order completed successfully</p>
+                                    @if (Model.DeliveredDate.HasValue)
+                                    {
+                                        <p class="text-muted small">@Model.DeliveredDate.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                                    }
+                                    @if (Model.IsDeliveryConfirmed)
+                                    {
+                                        <p class="text-success small"><i class="fas fa-check-circle me-1"></i>Confirmed by buyer</p>
+                                    }
                                 </div>
                             </div>
                         }

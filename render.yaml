@@ -1,0 +1,35 @@
+services:
+  # PostgreSQL Database
+  - type: pg
+    name: reacoda-molemi-db
+    database: Reacoda_MolemiDB
+    plan: free  # Change to 'starter' for production ($7/month)
+    
+  # Web Service
+  - type: web
+    name: reacoda-molemi-app
+    env: dotnet
+    buildCommand: dotnet publish -c Release -o ./publish
+    startCommand: dotnet ./publish/ReacodeApp.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:10000
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: reacoda-molemi-db
+          property: connectionString
+      # Add these manually in Render Dashboard after deployment:
+      # - key: Jwt__Key
+      #   value: <Generate secure key>
+      # - key: Jwt__Issuer
+      #   value: ReacodeApp
+      # - key: Jwt__Audience
+      #   value: ReacodeAppUsers
+      # - key: Jwt__ExpiryMinutes
+      #   value: 1440
+
+
+
+

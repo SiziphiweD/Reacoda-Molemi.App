@@ -255,6 +255,75 @@
             </div>
         </div>
     </div>
+
+    <!-- Notifications Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </h6>
+                    <span class="badge bg-danger">@Model.Notifications.Count(n => !n.IsRead) unread</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.Notifications.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var notification in Model.Notifications)
+                            {
+                                <div class="list-group-item @(notification.IsRead ? "" : "bg-light border-start border-3 border-primary")" style="cursor: pointer;">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0 me-3">
+                                            <i class="fas fa-@(notification.Type switch {
+                                                NotificationType.Order => "shopping-cart",
+                                                NotificationType.Product => "box",
+                                                NotificationType.System => "cog",
+                                                NotificationType.Payment => "credit-card",
+                                                NotificationType.Success => "check-circle",
+                                                NotificationType.Error => "exclamation-circle",
+                                                NotificationType.Warning => "exclamation-triangle",
+                                                _ => "info-circle"
+                                            }) text-@(notification.Type switch {
+                                                NotificationType.Order => "primary",
+                                                NotificationType.Product => "success",
+                                                NotificationType.System => "warning",
+                                                NotificationType.Payment => "info",
+                                                NotificationType.Success => "success",
+                                                NotificationType.Error => "danger",
+                                                NotificationType.Warning => "warning",
+                                                _ => "secondary"
+                                            }) fa-lg"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 @(notification.IsRead ? "" : "fw-bold")">@notification.Title</h6>
+                                            <p class="mb-1 text-muted small">@notification.Message</p>
+                                            <small class="text-muted">@notification.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                                            @if (notification.Type == NotificationType.Product && notification.RelatedEntityId.HasValue)
+                                            {
+                                                <div class="mt-2">
+                                                    <a asp-action="ProductVerification" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye me-1"></i>Review Product
+                                                    </a>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No notifications</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>

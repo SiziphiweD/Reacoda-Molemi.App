@@ -21,6 +21,10 @@ namespace ReacodeApp.Models
         // Foreign Key
         public int UserId { get; set; }
         
+        // Related Entity (for linking notifications to orders, products, etc.)
+        public int? RelatedEntityId { get; set; }
+        public string? RelatedEntityType { get; set; }
+        
         // Navigation property
         public virtual User User { get; set; } = null!;
     }

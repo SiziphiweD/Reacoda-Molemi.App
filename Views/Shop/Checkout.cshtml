@@ -19,6 +19,7 @@
                     <h5 class="fw-bold mb-0">Delivery Information</h5>
                 </div>
                 <div class="card-body">
+                    @Html.AntiForgeryToken()
                     <form id="checkoutForm">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -151,22 +152,40 @@
             button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
             button.disabled = true;
             
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            
+            // Create FormData to include anti-forgery token
+            const formData = new FormData();
+            formData.append('__RequestVerificationToken', token);
+            formData.append('FullName', orderData.fullName);
+            formData.append('PhoneNumber', orderData.phoneNumber);
+            formData.append('DeliveryAddress', orderData.deliveryAddress);
+            formData.append('City', orderData.city);
+            formData.append('PostalCode', orderData.postalCode);
+            formData.append('DeliveryNotes', orderData.deliveryNotes || '');
+            formData.append('PaymentMethod', orderData.paymentMethod);
+            
             fetch('@Url.Action("PlaceOrder", "Shop")', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    'RequestVerificationToken': token
                 },
-                body: JSON.stringify(orderData)
+                body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    showAlert('Order placed successfully!', 'success');
-                    // Clear cart and redirect
+                    showAlert('Order placed successfully! Redirecting...', 'success');
+                    // Redirect to order confirmation page
                     setTimeout(() => {
-                        window.location.href = '@Url.Action("Index", "Home")';
-                    }, 2000);
+                        window.location.href = '@Url.Action("OrderConfirmation", "Buyer")?id=' + data.orderId;
+                    }, 1500);
                 } else {
                     showAlert(data.message || 'Error placing order', 'danger');
                     button.innerHTML = originalText;
@@ -174,7 +193,8 @@
                 }
             })
             .catch(error => {
-                showAlert('Error placing order', 'danger');
+                console.error('Error:', error);
+                showAlert('Error placing order. Please try again.', 'danger');
                 button.innerHTML = originalText;
                 button.disabled = false;
             });

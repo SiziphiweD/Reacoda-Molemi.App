@@ -37,6 +37,10 @@
                                         </div>
                                         <div class="step-label">Order Accepted</div>
                                         <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Accepted ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                        @if (Model.Status >= ReacodeApp.Models.OrderStatus.Accepted && Model.EstimatedDeliveryDate.HasValue)
+                                        {
+                                            <div class="step-info text-muted small">Est. Delivery: @Model.EstimatedDeliveryDate.Value.ToString("MMM dd, yyyy")</div>
+                                        }
                                     </div>
                                     <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? "completed" : "")"></div>
                                     
@@ -45,7 +49,24 @@
                                             <i class="fas fa-shipping-fast"></i>
                                         </div>
                                         <div class="step-label">Shipped</div>
-                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Shipped ? (Model.ShippedDate?.ToString("MMM dd, yyyy") ?? Model.UpdatedAt?.ToString("MMM dd, yyyy")) : "Pending")</div>
+                                        @if (Model.Status >= ReacodeApp.Models.OrderStatus.Shipped && !string.IsNullOrWhiteSpace(Model.TrackingNumber))
+                                        {
+                                            <div class="step-info text-primary small">Tracking: @Model.TrackingNumber</div>
+                                        }
+                                    </div>
+                                    <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Arrived ? "completed" : "")"></div>
+                                    
+                                    <div class="step @(Model.Status >= ReacodeApp.Models.OrderStatus.Arrived ? "completed" : "")">
+                                        <div class="step-circle">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <div class="step-label">Arrived</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Arrived ? (Model.ArrivedDate?.ToString("MMM dd, yyyy") ?? Model.UpdatedAt?.ToString("MMM dd, yyyy")) : "Pending")</div>
+                                        @if (Model.Status == ReacodeApp.Models.OrderStatus.Arrived)
+                                        {
+                                            <div class="step-info text-info small">Farmer has arrived! Please confirm delivery.</div>
+                                        }
                                     </div>
                                     <div class="step-line @(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? "completed" : "")"></div>
                                     
@@ -54,7 +75,7 @@
                                             <i class="fas fa-home"></i>
                                         </div>
                                         <div class="step-label">Delivered</div>
-                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? Model.UpdatedAt?.ToString("MMM dd, yyyy") : "Pending")</div>
+                                        <div class="step-date">@(Model.Status >= ReacodeApp.Models.OrderStatus.Delivered ? (Model.DeliveredDate?.ToString("MMM dd, yyyy") ?? Model.UpdatedAt?.ToString("MMM dd, yyyy")) : "Pending")</div>
                                     </div>
                                 </div>
                             </div>
@@ -70,6 +91,7 @@
                                     ReacodeApp.Models.OrderStatus.Pending => "alert-warning",
                                     ReacodeApp.Models.OrderStatus.Accepted => "alert-info",
                                     ReacodeApp.Models.OrderStatus.Shipped => "alert-primary",
+                                    ReacodeApp.Models.OrderStatus.Arrived => "alert-info",
                                     ReacodeApp.Models.OrderStatus.Delivered => "alert-success",
                                     ReacodeApp.Models.OrderStatus.Rejected => "alert-danger",
                                     ReacodeApp.Models.OrderStatus.Cancelled => "alert-secondary",
@@ -91,7 +113,32 @@
                                 <strong>Current Status:</strong> @Model.Status.ToString()
                                 @if (Model.Status == ReacodeApp.Models.OrderStatus.Shipped)
                                 {
-                                    <br><small>Your order is on its way! Expected delivery: 2-3 business days</small>
+                                    <br>
+                                    @if (Model.ShippedDate.HasValue)
+                                    {
+                                        <small>Shipped on: @Model.ShippedDate.Value.ToString("MMMM dd, yyyy")</small>
+                                    }
+                                    @if (Model.EstimatedDeliveryDate.HasValue)
+                                    {
+                                        <br><small><strong>Expected delivery: @Model.EstimatedDeliveryDate.Value.ToString("MMMM dd, yyyy")</strong></small>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Model.TrackingNumber))
+                                    {
+                                        <br><small>Tracking Number: <strong>@Model.TrackingNumber</strong></small>
+                                    }
+                                }
+                                @if (Model.Status == ReacodeApp.Models.OrderStatus.Arrived)
+                                {
+                                    <br>
+                                    @if (Model.ArrivedDate.HasValue)
+                                    {
+                                        <small>Arrived on: @Model.ArrivedDate.Value.ToString("MMMM dd, yyyy HH:mm")</small>
+                                    }
+                                    <br><small><strong>Please confirm delivery to complete your order.</strong></small>
+                                }
+                                @if (Model.Status == ReacodeApp.Models.OrderStatus.Rejected && !string.IsNullOrWhiteSpace(Model.RejectionReason))
+                                {
+                                    <br><small><strong>Reason:</strong> @Model.RejectionReason</small>
                                 }
                                 else if (Model.Status == ReacodeApp.Models.OrderStatus.Delivered)
                                 {
@@ -205,6 +252,40 @@
                                             <em>@Model.DeliveryNotes</em>
                                         }
                                     </address>
+                                    
+                                    @if ((Model.Status == ReacodeApp.Models.OrderStatus.Shipped || Model.Status == ReacodeApp.Models.OrderStatus.Accepted) && Model.EstimatedDeliveryDate.HasValue)
+                                    {
+                                        <hr>
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-calendar-check me-2 text-primary"></i>Estimated Delivery:</strong>
+                                            <span class="text-primary fw-bold">@Model.EstimatedDeliveryDate.Value.ToString("MMMM dd, yyyy")</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (Model.Status == ReacodeApp.Models.OrderStatus.Shipped && !string.IsNullOrWhiteSpace(Model.TrackingNumber))
+                                    {
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-barcode me-2 text-primary"></i>Tracking Number:</strong>
+                                            <span class="text-primary fw-bold">@Model.TrackingNumber</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (Model.Status == ReacodeApp.Models.OrderStatus.Shipped && Model.ShippedDate.HasValue)
+                                    {
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-shipping-fast me-2 text-primary"></i>Shipped On:</strong>
+                                            <span>@Model.ShippedDate.Value.ToString("MMMM dd, yyyy HH:mm")</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (Model.Status == ReacodeApp.Models.OrderStatus.Rejected && !string.IsNullOrWhiteSpace(Model.RejectionReason))
+                                    {
+                                        <hr>
+                                        <div class="alert alert-danger">
+                                            <strong><i class="fas fa-times-circle me-2"></i>Rejection Reason:</strong>
+                                            <p class="mb-0 mt-2">@Model.RejectionReason</p>
+                                        </div>
+                                    }
                                 </div>
                             </div>
 
@@ -236,6 +317,12 @@
                                 <a href="@Url.Action("OrdersHistory", "Buyer")" class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-1"></i>Back to Orders
                                 </a>
+                                @if (Model.Status == ReacodeApp.Models.OrderStatus.Arrived)
+                                {
+                                    <a asp-action="ConfirmDelivery" asp-route-id="@Model.Id" class="btn btn-success">
+                                        <i class="fas fa-check-circle me-1"></i>Confirm Delivery
+                                    </a>
+                                }
                                 @if (Model.Status == ReacodeApp.Models.OrderStatus.Delivered)
                                 {
                                     <a href="@Url.Action("Reviews", "Buyer", new { productId = Model.OrderItems.First().ProductId })" class="btn btn-success">
